@@ -199,6 +199,11 @@ export default function NoteForgeAI() {
     fetchNotes(searchQuery);
   };
 
+  const handleUploadClick = (mode) => {
+    setUploadMode(mode);
+    setActiveView('upload');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
       {/* Header */}
