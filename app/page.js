@@ -107,7 +107,7 @@ export default function NoteForgeAI() {
       if (data.success) {
         setCurrentResult(data.data);
         toast.success('Processing complete!');
-        setActiveTab('result');
+        setActiveView('result');
       } else {
         toast.error(data.error || 'Processing failed');
       }
@@ -137,7 +137,7 @@ export default function NoteForgeAI() {
       if (data.success) {
         setCurrentResult(data.data);
         toast.success('Processing complete!');
-        setActiveTab('result');
+        setActiveView('result');
       } else {
         toast.error(data.error || 'Processing failed');
       }
