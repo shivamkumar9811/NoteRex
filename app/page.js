@@ -167,7 +167,7 @@ export default function NoteForgeAI() {
         setFile(null);
         setTextInput('');
         setYoutubeUrl('');
-        setActiveTab('notes');
+        setActiveView('notes');
       } else {
         toast.error(data.error || 'Failed to save note');
       }
