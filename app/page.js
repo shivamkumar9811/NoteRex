@@ -528,11 +528,11 @@ export default function NoteForgeAI() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-purple-600" />
-                {uploadMode === 'video' ? 'Upload Video/Audio' : 'Upload Notes/Documents'}
+                {uploadMode === 'video' ? 'Process Video/Audio' : 'Upload Notes/Documents'}
               </CardTitle>
               <CardDescription>
                 {uploadMode === 'video' 
-                  ? 'Upload audio or video files for AI transcription and summarization'
+                  ? 'Paste a YouTube URL or upload audio/video files for AI transcription and summarization'
                   : 'Upload PDFs or paste text to generate smart summaries'
                 }
               </CardDescription>
