@@ -6,6 +6,8 @@ import genAI from '@/lib/gemini';
 import { v4 as uuidv4 } from 'uuid';
 import Busboy from 'busboy';
 import pdf from 'pdf-parse';
+import ytdl from 'ytdl-core';
+import { Readable } from 'stream';
 
 // Helper function to parse multipart form data
 const parseFormData = async (request) => {
