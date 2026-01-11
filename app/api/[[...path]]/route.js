@@ -1,104 +1,306 @@
-import { MongoClient } from 'mongodb'
-import { v4 as uuidv4 } from 'uuid'
-import { NextResponse } from 'next/server'
+import { NextResponse } from 'next/server';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, where } from 'firebase/firestore';
+import openai from '@/lib/openai';
+import genAI from '@/lib/gemini';
+import { v4 as uuidv4 } from 'uuid';
+import Busboy from 'busboy';
+import pdf from 'pdf-parse';
 
-// MongoDB connection
-let client
-let db
+// Helper function to parse multipart form data
+const parseFormData = async (request) => {
+  return new Promise((resolve, reject) => {
+    const busboy = Busboy({ headers: Object.fromEntries(request.headers) });
+    const fields = {};
+    const files = [];
 
-async function connectToMongo() {
-  if (!client) {
-    client = new MongoClient(process.env.MONGO_URL)
-    await client.connect()
-    db = client.db(process.env.DB_NAME)
+    busboy.on('field', (fieldname, value) => {
+      fields[fieldname] = value;
+    });
+
+    busboy.on('file', (fieldname, file, info) => {
+      const { filename, encoding, mimeType } = info;
+      const chunks = [];
+
+      file.on('data', (chunk) => {
+        chunks.push(chunk);
+      });
+
+      file.on('end', () => {
+        files.push({
+          fieldname,
+          filename,
+          mimeType,
+          buffer: Buffer.concat(chunks),
+        });
+      });
+    });
+
+    busboy.on('finish', () => {
+      resolve({ fields, files });
+    });
+
+    busboy.on('error', reject);
+
+    request.body.pipe(busboy);
+  });
+};
+
+// Transcribe audio/video using Whisper
+const transcribeAudio = async (audioBuffer, filename) => {
+  try {
+    // Create a File-like object from buffer
+    const file = new File([audioBuffer], filename, { 
+      type: filename.endsWith('.mp3') ? 'audio/mpeg' : 'audio/wav' 
+    });
+
+    const transcription = await openai.audio.transcriptions.create({
+      file: file,
+      model: 'whisper-1',
+      language: 'en',
+    });
+
+    return transcription.text;
+  } catch (error) {
+    console.error('Whisper transcription error:', error);
+    throw new Error(`Transcription failed: ${error.message}`);
   }
-  return db
-}
+};
 
-// Helper function to handle CORS
-function handleCORS(response) {
-  response.headers.set('Access-Control-Allow-Origin', process.env.CORS_ORIGINS || '*')
-  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-  response.headers.set('Access-Control-Allow-Credentials', 'true')
-  return response
-}
+// Extract text from PDF
+const extractTextFromPDF = async (pdfBuffer) => {
+  try {
+    const data = await pdf(pdfBuffer);
+    return data.text;
+  } catch (error) {
+    console.error('PDF extraction error:', error);
+    throw new Error(`PDF extraction failed: ${error.message}`);
+  }
+};
 
-// OPTIONS handler for CORS
-export async function OPTIONS() {
-  return handleCORS(new NextResponse(null, { status: 200 }))
-}
+// Generate AI summaries using Gemini
+const generateSummaries = async (text) => {
+  try {
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
 
-// Route handler function
-async function handleRoute(request, { params }) {
-  const { path = [] } = params
-  const route = `/${path.join('/')}`
-  const method = request.method
+    // Prompt for all 4 summary formats
+    const prompt = `You are an expert note-taking assistant. Analyze the following text and provide 4 different types of summaries:
+
+1. BULLET-POINT NOTES: Key points in bullet format
+2. TOPIC-WISE STRUCTURED FORMAT: Organize content by main topics with sub-points
+3. KEY TAKEAWAYS: 3-5 most important insights
+4. Q&A FOR REVISION: 5-10 question-answer pairs for studying
+
+Text to analyze:
+${text}
+
+Provide the output in this exact JSON format:
+{
+  "bulletPoints": "...",
+  "topics": "...",
+  "keyTakeaways": "...",
+  "qa": "..."
+}`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const summaryText = response.text();
+
+    // Try to parse JSON response
+    let summaries;
+    try {
+      // Extract JSON from markdown code blocks if present
+      const jsonMatch = summaryText.match(/```json\s*([\s\S]*?)\s*```/) || 
+                       summaryText.match(/```\s*([\s\S]*?)\s*```/);
+      const jsonStr = jsonMatch ? jsonMatch[1] : summaryText;
+      summaries = JSON.parse(jsonStr);
+    } catch {
+      // If JSON parsing fails, create structured format from text
+      summaries = {
+        bulletPoints: summaryText,
+        topics: summaryText,
+        keyTakeaways: summaryText,
+        qa: summaryText,
+      };
+    }
+
+    return summaries;
+  } catch (error) {
+    console.error('Gemini summarization error:', error);
+    throw new Error(`Summarization failed: ${error.message}`);
+  }
+};
+
+// API Routes Handler
+export async function POST(request) {
+  const pathname = new URL(request.url).pathname;
 
   try {
-    const db = await connectToMongo()
+    // POST /api/process - Process file and generate summaries
+    if (pathname === '/api/process') {
+      const contentType = request.headers.get('content-type');
 
-    // Root endpoint - GET /api/root (since /api/ is not accessible with catch-all)
-    if (route === '/root' && method === 'GET') {
-      return handleCORS(NextResponse.json({ message: "Hello World" }))
-    }
-    // Root endpoint - GET /api/root (since /api/ is not accessible with catch-all)
-    if (route === '/' && method === 'GET') {
-      return handleCORS(NextResponse.json({ message: "Hello World" }))
-    }
+      // Handle YouTube URL
+      if (contentType?.includes('application/json')) {
+        const { youtubeUrl, text, sourceType } = await request.json();
 
-    // Status endpoints - POST /api/status
-    if (route === '/status' && method === 'POST') {
-      const body = await request.json()
-      
-      if (!body.client_name) {
-        return handleCORS(NextResponse.json(
-          { error: "client_name is required" }, 
-          { status: 400 }
-        ))
+        if (youtubeUrl) {
+          return NextResponse.json(
+            { error: 'YouTube processing requires server-side implementation with ytdl-core' },
+            { status: 501 }
+          );
+        }
+
+        // Handle direct text input
+        if (text && sourceType === 'text') {
+          const summaries = await generateSummaries(text);
+          const title = text.substring(0, 50) + '...';
+
+          return NextResponse.json({
+            success: true,
+            data: {
+              title,
+              sourceType: 'text',
+              transcript: text,
+              summaries,
+            },
+          });
+        }
       }
 
-      const statusObj = {
+      // Handle file upload
+      if (contentType?.includes('multipart/form-data')) {
+        const formData = await request.formData();
+        const file = formData.get('file');
+        const sourceType = formData.get('sourceType');
+
+        if (!file) {
+          return NextResponse.json(
+            { error: 'No file provided' },
+            { status: 400 }
+          );
+        }
+
+        const buffer = Buffer.from(await file.arrayBuffer());
+        let transcript = '';
+        let title = file.name;
+
+        // Process based on file type
+        if (sourceType === 'audio' || sourceType === 'video') {
+          transcript = await transcribeAudio(buffer, file.name);
+        } else if (sourceType === 'pdf') {
+          transcript = await extractTextFromPDF(buffer);
+        } else if (sourceType === 'text') {
+          transcript = buffer.toString('utf-8');
+        }
+
+        // Generate summaries
+        const summaries = await generateSummaries(transcript);
+
+        return NextResponse.json({
+          success: true,
+          data: {
+            title,
+            sourceType,
+            transcript,
+            summaries,
+          },
+        });
+      }
+
+      return NextResponse.json(
+        { error: 'Invalid content type' },
+        { status: 400 }
+      );
+    }
+
+    // POST /api/notes - Save note to Firestore
+    if (pathname === '/api/notes') {
+      const { title, sourceType, transcript, summaries } = await request.json();
+
+      const noteData = {
         id: uuidv4(),
-        client_name: body.client_name,
-        timestamp: new Date()
-      }
+        title,
+        sourceType,
+        transcript,
+        summaries,
+        searchableText: `${title} ${transcript}`.toLowerCase(),
+        createdAt: new Date().toISOString(),
+      };
 
-      await db.collection('status_checks').insertOne(statusObj)
-      return handleCORS(NextResponse.json(statusObj))
+      const docRef = await addDoc(collection(db, 'notes'), noteData);
+
+      return NextResponse.json({
+        success: true,
+        data: { ...noteData, firestoreId: docRef.id },
+      });
     }
 
-    // Status endpoints - GET /api/status
-    if (route === '/status' && method === 'GET') {
-      const statusChecks = await db.collection('status_checks')
-        .find({})
-        .limit(1000)
-        .toArray()
-
-      // Remove MongoDB's _id field from response
-      const cleanedStatusChecks = statusChecks.map(({ _id, ...rest }) => rest)
-      
-      return handleCORS(NextResponse.json(cleanedStatusChecks))
-    }
-
-    // Route not found
-    return handleCORS(NextResponse.json(
-      { error: `Route ${route} not found` }, 
+    return NextResponse.json(
+      { error: 'Route not found' },
       { status: 404 }
-    ))
-
+    );
   } catch (error) {
-    console.error('API Error:', error)
-    return handleCORS(NextResponse.json(
-      { error: "Internal server error" }, 
+    console.error('API Error:', error);
+    return NextResponse.json(
+      { error: error.message || 'Internal server error' },
       { status: 500 }
-    ))
+    );
   }
 }
 
-// Export all HTTP methods
-export const GET = handleRoute
-export const POST = handleRoute
-export const PUT = handleRoute
-export const DELETE = handleRoute
-export const PATCH = handleRoute
+// GET /api/notes - Fetch all notes or search
+export async function GET(request) {
+  const { searchParams } = new URL(request.url);
+  const searchQuery = searchParams.get('search');
+
+  try {
+    const notesRef = collection(db, 'notes');
+    let q;
+
+    if (searchQuery) {
+      // Simple search implementation
+      q = query(notesRef, orderBy('createdAt', 'desc'));
+      const snapshot = await getDocs(q);
+      const notes = snapshot.docs
+        .map(doc => ({ firestoreId: doc.id, ...doc.data() }))
+        .filter(note => 
+          note.searchableText?.includes(searchQuery.toLowerCase())
+        );
+      
+      return NextResponse.json({ success: true, data: notes });
+    }
+
+    q = query(notesRef, orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(q);
+    const notes = snapshot.docs.map(doc => ({
+      firestoreId: doc.id,
+      ...doc.data(),
+    }));
+
+    return NextResponse.json({ success: true, data: notes });
+  } catch (error) {
+    console.error('Fetch notes error:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to fetch notes' },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE /api/notes/:id
+export async function DELETE(request) {
+  const pathname = new URL(request.url).pathname;
+  const firestoreId = pathname.split('/').pop();
+
+  try {
+    await deleteDoc(doc(db, 'notes', firestoreId));
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Delete note error:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to delete note' },
+      { status: 500 }
+    );
+  }
+}
