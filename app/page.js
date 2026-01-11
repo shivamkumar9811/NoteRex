@@ -23,7 +23,13 @@ import {
   Brain,
   ListChecks,
   Lightbulb,
-  MessageSquareQuote
+  MessageSquareQuote,
+  Zap,
+  Shield,
+  Target,
+  ArrowRight,
+  Play,
+  FileUp
 } from 'lucide-react';
 import { toast } from 'sonner';
 
