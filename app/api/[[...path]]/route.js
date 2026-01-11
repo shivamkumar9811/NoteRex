@@ -174,15 +174,29 @@ export async function POST(request) {
     if (pathname === '/api/process') {
       const contentType = request.headers.get('content-type');
 
-      // Handle YouTube URL
+      // Handle YouTube URL and text input
       if (contentType?.includes('application/json')) {
         const { youtubeUrl, text, sourceType } = await request.json();
 
         if (youtubeUrl) {
-          return NextResponse.json(
-            { error: 'YouTube processing requires server-side implementation with ytdl-core' },
-            { status: 501 }
-          );
+          // Process YouTube video
+          const { audioBuffer, title } = await extractAudioFromYouTube(youtubeUrl);
+          
+          // Transcribe audio using Whisper
+          const transcript = await transcribeAudio(audioBuffer, 'youtube-audio.mp3');
+          
+          // Generate summaries
+          const summaries = await generateSummaries(transcript);
+
+          return NextResponse.json({
+            success: true,
+            data: {
+              title,
+              sourceType: 'youtube',
+              transcript,
+              summaries,
+            },
+          });
         }
 
         // Handle direct text input
