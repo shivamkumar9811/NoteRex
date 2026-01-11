@@ -540,59 +540,104 @@ export default function NoteForgeAI() {
             <CardContent className="space-y-6">
               {/* File Upload */}
               {uploadMode === 'video' && (
-                <div className="space-y-3">
-                  <Label>Upload Audio/Video File</Label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Card className="border-2 border-dashed hover:border-indigo-500 transition-colors cursor-pointer">
-                      <CardContent className="pt-6">
-                        <label className="cursor-pointer flex flex-col items-center gap-2">
-                          <FileAudio className="w-8 h-8 text-indigo-600" />
-                          <span className="text-sm font-medium">Audio</span>
-                          <input
-                            type="file"
-                            accept="audio/*"
-                            onChange={handleFileSelect}
-                            className="hidden"
-                          />
-                        </label>
-                      </CardContent>
-                    </Card>
-                    <Card className="border-2 border-dashed hover:border-purple-500 transition-colors cursor-pointer">
-                      <CardContent className="pt-6">
-                        <label className="cursor-pointer flex flex-col items-center gap-2">
-                          <FileVideo className="w-8 h-8 text-purple-600" />
-                          <span className="text-sm font-medium">Video</span>
-                          <input
-                            type="file"
-                            accept="video/*"
-                            onChange={handleFileSelect}
-                            className="hidden"
-                          />
-                        </label>
-                      </CardContent>
-                    </Card>
-                  </div>
-                  {file && (
-                    <>
-                      <div className="flex items-center gap-2 p-3 bg-indigo-50 rounded-lg">
-                        <Upload className="w-4 h-4 text-indigo-600" />
-                        <span className="text-sm font-medium text-indigo-900">{file.name}</span>
+                <div className="space-y-6">
+                  {/* YouTube URL Input */}
+                  <div className="space-y-3">
+                    <Label htmlFor="youtube">YouTube Video URL</Label>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Youtube className="absolute left-3 top-3 w-5 h-5 text-red-500" />
+                        <Input
+                          id="youtube"
+                          type="url"
+                          placeholder="https://www.youtube.com/watch?v=..."
+                          value={youtubeUrl}
+                          onChange={(e) => setYoutubeUrl(e.target.value)}
+                          className="pl-11"
+                        />
                       </div>
-                      <Button onClick={processFile} disabled={processing} className="w-full">
+                    </div>
+                    {youtubeUrl && (
+                      <Button onClick={processYouTube} disabled={processing} className="w-full">
                         {processing ? (
                           <>
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Processing...
+                            Extracting & Transcribing...
                           </>
                         ) : (
                           <>
-                            <Sparkles className="w-4 h-4 mr-2" />
-                            Process File
+                            <Youtube className="w-4 h-4 mr-2" />
+                            Process YouTube Video
                           </>
                         )}
                       </Button>
-                    </>
-                  )}
+                    )}
+                  </div>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <Separator />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">Or upload file</span>
+                    </div>
+                  </div>
+
+                  {/* Audio/Video File Upload */}
+                  <div className="space-y-3">
+                    <Label>Upload Audio/Video File</Label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Card className="border-2 border-dashed hover:border-indigo-500 transition-colors cursor-pointer">
+                        <CardContent className="pt-6">
+                          <label className="cursor-pointer flex flex-col items-center gap-2">
+                            <FileAudio className="w-8 h-8 text-indigo-600" />
+                            <span className="text-sm font-medium">Audio</span>
+                            <input
+                              type="file"
+                              accept="audio/*"
+                              onChange={handleFileSelect}
+                              className="hidden"
+                            />
+                          </label>
+                        </CardContent>
+                      </Card>
+                      <Card className="border-2 border-dashed hover:border-purple-500 transition-colors cursor-pointer">
+                        <CardContent className="pt-6">
+                          <label className="cursor-pointer flex flex-col items-center gap-2">
+                            <FileVideo className="w-8 h-8 text-purple-600" />
+                            <span className="text-sm font-medium">Video</span>
+                            <input
+                              type="file"
+                              accept="video/*"
+                              onChange={handleFileSelect}
+                              className="hidden"
+                            />
+                          </label>
+                        </CardContent>
+                      </Card>
+                    </div>
+                    {file && (
+                      <>
+                        <div className="flex items-center gap-2 p-3 bg-indigo-50 rounded-lg">
+                          <Upload className="w-4 h-4 text-indigo-600" />
+                          <span className="text-sm font-medium text-indigo-900">{file.name}</span>
+                        </div>
+                        <Button onClick={processFile} disabled={processing} className="w-full">
+                          {processing ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Processing...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-4 h-4 mr-2" />
+                              Process File
+                            </>
+                          )}
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
               )}
 
