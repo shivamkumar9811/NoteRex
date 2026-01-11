@@ -148,6 +148,36 @@ export default function NoteForgeAI() {
     }
   };
 
+  const processYouTube = async () => {
+    if (!youtubeUrl.trim()) {
+      toast.error('Please enter a YouTube URL');
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      const response = await fetch('/api/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ youtubeUrl, sourceType: 'youtube' }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setCurrentResult(data.data);
+        toast.success('YouTube video processed successfully!');
+        setActiveView('result');
+      } else {
+        toast.error(data.error || 'YouTube processing failed');
+      }
+    } catch (error) {
+      toast.error('YouTube processing failed: ' + error.message);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const saveNote = async () => {
     if (!currentResult) return;
 
