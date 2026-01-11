@@ -294,3 +294,82 @@ When the user reports an issue or requests a change:
 **Last Updated**: 2025-01-11 - YouTube Integration Complete
 **Server Status**: ✅ Running on port 3000
 **Next Action**: Test YouTube URL processing and file upload features
+
+---
+
+## Backend Testing Results - 2025-01-11
+
+### Testing Agent Report
+
+**Status**: ❌ **CRITICAL CONFIGURATION ISSUE IDENTIFIED**
+
+#### Issues Found:
+
+1. **Emergent LLM Key Configuration Error**
+   - **Problem**: The `sk-emergent-559DcF0453f46335cE` key is being used directly with OpenAI and Gemini APIs
+   - **Root Cause**: Code is calling `api.openai.com` and `generativelanguage.googleapis.com` directly instead of using Emergent gateway
+   - **Impact**: All transcription and summarization features are failing
+
+2. **YouTube Processing Fixed**
+   - **Fixed**: Replaced `ytdl-core` with `@distube/ytdl-core` to resolve "Could not extract functions" error
+   - **Status**: Ready for testing once API configuration is fixed
+
+#### Test Results Summary:
+- ✅ **Frontend Connectivity**: Working
+- ❌ **Text Processing**: Failed - Invalid Gemini API key
+- ❌ **Audio Processing**: Failed - Invalid OpenAI API key  
+- ❌ **YouTube Processing**: Failed - Invalid API keys
+- ❌ **Error Handling**: Failed - Invalid API keys
+
+#### Required Fix:
+The OpenAI and Gemini clients need to be configured to use the **Emergent gateway base URL** instead of direct API endpoints.
+
+**Current Configuration (INCORRECT):**
+```javascript
+// lib/openai.js - WRONG
+const openai = new OpenAI({
+  apiKey: process.env.EMERGENT_LLM_KEY,  // sk-emergent key
+  // Missing: baseURL should point to Emergent gateway
+});
+
+// lib/gemini.js - WRONG  
+const genAI = new GoogleGenerativeAI(process.env.EMERGENT_LLM_KEY);
+// Should use Emergent gateway, not direct Google API
+```
+
+**Required Configuration (CORRECT):**
+```javascript
+// lib/openai.js - CORRECT
+const openai = new OpenAI({
+  apiKey: process.env.EMERGENT_LLM_KEY,
+  baseURL: process.env.EMERGENT_BASE_URL  // Need Emergent gateway URL
+});
+
+// lib/gemini.js - CORRECT
+// Need to configure Gemini to use Emergent gateway as well
+```
+
+#### Action Items for Main Agent:
+1. **HIGH PRIORITY**: Obtain the correct Emergent gateway base URL from the Emergent dashboard
+2. **HIGH PRIORITY**: Update `lib/openai.js` to use `baseURL: process.env.EMERGENT_BASE_URL`
+3. **HIGH PRIORITY**: Update `lib/gemini.js` to use Emergent gateway instead of direct Google API
+4. **MEDIUM PRIORITY**: Add `EMERGENT_BASE_URL` to `.env` file
+5. **LOW PRIORITY**: Retest all features after configuration fix
+
+#### Technical Details:
+- **Error Messages**: 
+  - Gemini: "API key not valid" (trying to use sk-emergent key with Google API)
+  - OpenAI: "Incorrect API key provided" (trying to use sk-emergent key with OpenAI API)
+- **YouTube Fix Applied**: Updated to `@distube/ytdl-core` to resolve extraction issues
+- **All Features Blocked**: Until API gateway configuration is corrected
+
+#### Next Steps:
+1. Main agent must configure Emergent gateway URLs
+2. Retest all backend functionality
+3. Verify YouTube, audio, video, and text processing work end-to-end
+
+---
+
+**Last Updated**: 2025-01-11 - Backend Testing Complete - Configuration Issue Identified
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Fix Emergent LLM gateway configuration
