@@ -44,6 +44,7 @@ export default function NoteForgeAI() {
   const [loadingNotes, setLoadingNotes] = useState(false);
   const [activeView, setActiveView] = useState('landing'); // landing, upload, result, notes
   const [uploadMode, setUploadMode] = useState('video'); // video or notes
+  const [activeTab, setActiveTab] = useState('upload'); // for tabs when not on landing
 
   // Fetch all notes on mount
   useEffect(() => {
