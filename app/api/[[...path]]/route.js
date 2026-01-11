@@ -80,6 +80,38 @@ const extractTextFromPDF = async (pdfBuffer) => {
   }
 };
 
+// Extract audio from YouTube video
+const extractAudioFromYouTube = async (youtubeUrl) => {
+  try {
+    // Validate YouTube URL
+    if (!ytdl.validateURL(youtubeUrl)) {
+      throw new Error('Invalid YouTube URL');
+    }
+
+    // Get video info
+    const info = await ytdl.getInfo(youtubeUrl);
+    const title = info.videoDetails.title;
+
+    // Download audio in-memory
+    const audioStream = ytdl(youtubeUrl, {
+      quality: 'highestaudio',
+      filter: 'audioonly',
+    });
+
+    // Convert stream to buffer
+    const chunks = [];
+    for await (const chunk of audioStream) {
+      chunks.push(chunk);
+    }
+    const audioBuffer = Buffer.concat(chunks);
+
+    return { audioBuffer, title };
+  } catch (error) {
+    console.error('YouTube extraction error:', error);
+    throw new Error(`YouTube audio extraction failed: ${error.message}`);
+  }
+};
+
 // Generate AI summaries using Gemini
 const generateSummaries = async (text) => {
   try {
