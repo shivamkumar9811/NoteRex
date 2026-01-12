@@ -660,6 +660,72 @@ When invoked for testing:
 - Text summarization
 - End-to-end flow with GPT-4o-mini
 
+
+
+## LATEST UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key from user
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+   - **Reason**: Avoid Gemini quota exhaustion issues
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to prevent quota issues
+   - Better error handling and JSON parsing
+   - System prompt for better structured output
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+   - ✅ **No Firebase required**: Firebase is optional for note-saving
+
+### Implementation Details:
+
+**API Keys:**
+- `OPENAI_API_KEY`: User-provided key for Whisper + GPT-4o-mini
+- `GEMINI_API_KEY`: User-provided key (backup, not currently used)
+
+**Models Used:**
+- OpenAI: `whisper-1` (for transcription)
+- OpenAI: `gpt-4o-mini` (for summarization - NEW!)
+
+**Summarization Format:**
+```javascript
+{
+  bulletPoints: "Comprehensive bullet-point summary",
+  topics: "Topic-wise organization",
+  keyTakeaways: "Key insights and concepts",
+  qa: "Question and Answer pairs for exam prep"
+}
+```
+
+### Ready for Testing:
+- ✅ YouTube URL processing (audio extraction + transcription + summarization)
+- ✅ Audio file transcription and summarization
+- ✅ Video file transcription and summarization
+- ✅ Text summarization
+- ✅ PDF text extraction and summarization
+- ✅ End-to-end flow with GPT-4o-mini
+
+### Benefits of GPT-4o-mini:
+1. **Higher Quota**: Better free tier limits compared to Gemini
+2. **Reliability**: More stable API availability
+3. **Single Provider**: Both Whisper and summarization from OpenAI
+4. **Cost Efficient**: Optimized for this use case
+
+**Last Updated**: 2025-01-11 23:45 - Switched to GPT-4o-mini
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Test backend with GPT-4o-mini + test YouTube extraction
+
+
 **Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
 **Server Status**: ✅ Running on port 3000  
 **Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
