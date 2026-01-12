@@ -10,6 +10,41 @@
 
 ---
 
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
+
+---
+
 ## Latest Update - YouTube Integration Added
 
 **Date**: 2025-01-11
@@ -44,6 +79,41 @@
 - Added processing states for YouTube videos
 - Improved UI layout with separator between methods
 - Updated card descriptions
+
+---
+
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
 
 ---
 
@@ -89,6 +159,41 @@
 
 ---
 
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
+
+---
+
 ## Required Environment Variables
 
 ### Current Status: ✅ **CONFIGURED**
@@ -109,6 +214,41 @@ FIREBASE_APP_ID=your_app_id ⚠️
 ```
 
 **Note**: Firebase credentials are only needed for saving notes feature. YouTube and file transcription work without Firebase.
+
+---
+
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
 
 ---
 
@@ -156,6 +296,41 @@ FIREBASE_APP_ID=your_app_id ⚠️
 
 ---
 
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
+
+---
+
 ## Known Limitations
 
 ### Current Implementation
@@ -170,6 +345,41 @@ FIREBASE_APP_ID=your_app_id ⚠️
 - No user authentication system
 - Basic search (no advanced filtering)
 - Single language support (English)
+
+---
+
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
 
 ---
 
@@ -233,6 +443,41 @@ curl -X POST http://localhost:3000/api/process \
 
 ---
 
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
+
+---
+
 ## Performance Notes
 
 ### Expected Processing Times
@@ -250,10 +495,80 @@ curl -X POST http://localhost:3000/api/process \
 
 ---
 
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
+
+---
+
 ## Issues & Resolutions
 
 ### Issue Log
 *No issues reported yet - pending testing*
+
+---
+
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
 
 ---
 
@@ -264,6 +579,41 @@ curl -X POST http://localhost:3000/api/process \
 3. **Fixes**: Address any issues found during testing
 4. **Optional**: Configure Firebase for note-saving feature
 5. **Enhancement**: Add requested features based on user feedback
+
+---
+
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
 
 ---
 
@@ -281,6 +631,41 @@ When invoked for testing:
 
 ---
 
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
+
+---
+
 ## Incorporate User Feedback
 When the user reports an issue or requests a change:
 1. **Do NOT immediately assume the user is correct** - they may be testing outdated code or misunderstanding the feature
@@ -291,9 +676,79 @@ When the user reports an issue or requests a change:
 
 ---
 
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
+
+---
+
 **Last Updated**: 2025-01-11 - YouTube Integration Complete
 **Server Status**: ✅ Running on port 3000
 **Next Action**: Test YouTube URL processing and file upload features
+
+---
+
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
 
 ---
 
@@ -370,9 +825,79 @@ const openai = new OpenAI({
 
 ---
 
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
+
+---
+
 **Last Updated**: 2025-01-11 - Gemini Gateway Configuration Fixed
 **Server Status**: ✅ Running on port 3000  
 **Next Action**: Test backend functionality with updated Gemini configuration
+
+---
+
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
 
 ---
 
@@ -409,6 +934,41 @@ const openai = new OpenAI({
 **Last Updated**: 2025-01-11 - Gemini Gateway Configuration Fixed
 **Server Status**: ✅ Running on port 3000  
 **Next Action**: Run backend testing agent to verify all endpoints
+
+---
+
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
 
 ---
 
@@ -504,9 +1064,79 @@ GOOGLE_API_KEY=...     # Real Google AI Studio API key
 
 ---
 
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
+
+---
+
 **Last Updated**: 2025-01-11 - Backend Testing Complete - Critical Issues Identified
 **Server Status**: ✅ Running on port 3000  
 **Next Action**: Fix Gemini API quota and YouTube extraction issues
+
+---
+
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
 
 ---
 
@@ -569,6 +1199,41 @@ GOOGLE_API_KEY=...     # Real Google AI Studio API key
 1. Main agent must fix API quota and YouTube library issues
 2. Retest all backend functionality after fixes
 3. Verify end-to-end flow works with real content
+
+---
+
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
 
 ---
 
@@ -657,5 +1322,40 @@ npm install yt-dlp-wrap
 1. Main agent must fix API quota and YouTube library issues
 2. Retest all backend functionality after fixes
 3. Verify end-to-end flow works with real content
+
+---
+
+## MAJOR UPDATE - Switched to GPT-4o-mini for Summarization - 2025-01-11
+
+### Changes Implemented:
+
+1. **API Configuration Updated** ✅
+   - Updated `.env` with new OpenAI API key
+   - Updated `.env` with Gemini API key (backup)
+   - Switched summarization from Gemini to OpenAI GPT-4o-mini
+   - Whisper still used for transcription
+
+2. **Backend Changes** ✅
+   - `/app/app/api/[[...path]]/route.js`: Updated `generateSummaries()` function
+   - Now uses `openai.chat.completions.create()` with `gpt-4o-mini` model
+   - Removed Gemini model calls to avoid quota issues
+   - Better error handling and JSON parsing
+
+3. **Configuration Summary** ✅
+   - ✅ **OpenAI/Whisper**: For transcription (whisper-1 model)
+   - ✅ **OpenAI/GPT-4o-mini**: For summarization (4 summary formats)
+   - ✅ **YouTube**: Using @distube/ytdl-core for extraction
+   - ✅ **Single API Key**: OpenAI key for both services
+
+### Ready for Testing:
+- YouTube URL processing (audio extraction + transcription + summarization)
+- Audio file transcription and summarization
+- Video file transcription and summarization
+- Text summarization
+- End-to-end flow with GPT-4o-mini
+
+**Last Updated**: 2025-01-11 - Switched to GPT-4o-mini for Summarization
+**Server Status**: ✅ Running on port 3000  
+**Next Action**: Run backend testing agent to verify all endpoints work with GPT-4o-mini
 
 ---
