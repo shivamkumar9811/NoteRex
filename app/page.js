@@ -617,7 +617,7 @@ export default function NoteForgeAI() {
                         {processing ? (
                           <>
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Extracting & Transcribing...
+                            {processingStage === 'transcribing' ? 'Transcribing...' : 'Summarizing...'}
                           </>
                         ) : (
                           <>
