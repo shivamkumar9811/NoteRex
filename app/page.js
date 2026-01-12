@@ -29,7 +29,10 @@ import {
   Target,
   ArrowRight,
   Play,
-  FileUp
+  FileUp,
+  Edit3,
+  RefreshCw,
+  Save
 } from 'lucide-react';
 import { toast } from 'sonner';
 
