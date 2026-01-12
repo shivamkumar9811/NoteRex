@@ -112,13 +112,20 @@ const extractAudioFromYouTube = async (youtubeUrl) => {
   }
 };
 
-// Generate AI summaries using Gemini
+// Generate AI summaries using Gemini via Emergent Gateway
 const generateSummaries = async (text) => {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
-
-    // Prompt for all 4 summary formats
-    const prompt = `You are an expert note-taking assistant. Analyze the following text and provide 4 different types of summaries:
+    // Use OpenAI chat completions format with Gemini model through Emergent gateway
+    const completion = await geminiClient.chat.completions.create({
+      model: 'gemini-2.0-flash-exp',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert note-taking assistant. Always respond with valid JSON only.'
+        },
+        {
+          role: 'user',
+          content: `Analyze the following text and provide 4 different types of summaries:
 
 1. BULLET-POINT NOTES: Key points in bullet format
 2. TOPIC-WISE STRUCTURED FORMAT: Organize content by main topics with sub-points
@@ -134,11 +141,14 @@ Provide the output in this exact JSON format:
   "topics": "...",
   "keyTakeaways": "...",
   "qa": "..."
-}`;
+}`
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 2000,
+    });
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const summaryText = response.text();
+    const summaryText = completion.choices[0].message.content;
 
     // Try to parse JSON response
     let summaries;
