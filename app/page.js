@@ -38,13 +38,16 @@ export default function NoteForgeAI() {
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [textInput, setTextInput] = useState('');
   const [processing, setProcessing] = useState(false);
+  const [processingStage, setProcessingStage] = useState(''); // 'transcribing' or 'summarizing'
   const [currentResult, setCurrentResult] = useState(null);
+  const [editedTranscript, setEditedTranscript] = useState('');
   const [notes, setNotes] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loadingNotes, setLoadingNotes] = useState(false);
   const [activeView, setActiveView] = useState('landing'); // landing, upload, result, notes
   const [uploadMode, setUploadMode] = useState('video'); // video or notes
   const [activeTab, setActiveTab] = useState('upload'); // for tabs when not on landing
+  const [resultTab, setResultTab] = useState('video'); // video, transcript, notes, qa
 
   // Fetch all notes on mount
   useEffect(() => {
