@@ -125,41 +125,39 @@ const generateSummaries = async (text) => {
         },
         {
           role: 'user',
-          content: `Analyze the following text and provide 4 different types of summaries:
+          content: `Analyze the following text and provide 4 different types of summaries.
 
-1. BULLET-POINT NOTES: Key points in bullet format
-2. TOPIC-WISE STRUCTURED FORMAT: Organize content by main topics with sub-points
-3. KEY TAKEAWAYS: 3-5 most important insights
-4. Q&A FOR REVISION: 5-10 question-answer pairs for studying
+Provide ONLY a valid JSON response (no markdown, no code blocks) in this exact format:
+{
+  "bulletPoints": "string with bullet points",
+  "topics": "string with topic-wise organization",
+  "keyTakeaways": "string with key insights",
+  "qa": "string with Q&A pairs"
+}
 
 Text to analyze:
-${text}
-
-Provide the output in this exact JSON format:
-{
-  "bulletPoints": "...",
-  "topics": "...",
-  "keyTakeaways": "...",
-  "qa": "..."
-}`
+${text}`
         }
       ],
       temperature: 0.7,
       max_tokens: 2000,
+      response_format: { type: "json_object" }
     });
 
     const summaryText = completion.choices[0].message.content;
 
-    // Try to parse JSON response
+    // Parse JSON response
     let summaries;
     try {
-      // Extract JSON from markdown code blocks if present
-      const jsonMatch = summaryText.match(/```json\s*([\s\S]*?)\s*```/) || 
-                       summaryText.match(/```\s*([\s\S]*?)\s*```/);
-      const jsonStr = jsonMatch ? jsonMatch[1] : summaryText;
-      summaries = JSON.parse(jsonStr);
-    } catch {
-      // If JSON parsing fails, create structured format from text
+      summaries = JSON.parse(summaryText);
+      
+      // Validate that all required fields are present
+      if (!summaries.bulletPoints || !summaries.topics || !summaries.keyTakeaways || !summaries.qa) {
+        throw new Error('Missing required fields in summary');
+      }
+    } catch (parseError) {
+      console.error('Failed to parse summary JSON:', parseError);
+      // Fallback: create structured format from text
       summaries = {
         bulletPoints: summaryText,
         topics: summaryText,
