@@ -129,11 +129,9 @@ const extractAudioFromYouTube = async (youtubeUrl) => {
   }
 };
 
-// Generate AI summaries using Google Gemini
+// Generate AI summaries using OpenAI GPT-4o-mini
 const generateSummaries = async (text) => {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
-
     const prompt = `Analyze the following text and provide 4 different types of summaries for studying.
 
 Provide ONLY a valid JSON response (no markdown, no code blocks) in this exact format:
@@ -147,9 +145,23 @@ Provide ONLY a valid JSON response (no markdown, no code blocks) in this exact f
 Text to analyze:
 ${text}`;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const summaryText = response.text();
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert study assistant that creates comprehensive summaries. Always respond with valid JSON only, no markdown formatting.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 2000,
+    });
+
+    const summaryText = response.choices[0].message.content;
 
     // Parse JSON response
     let summaries;
@@ -177,7 +189,7 @@ ${text}`;
 
     return summaries;
   } catch (error) {
-    console.error('Gemini summarization error:', error);
+    console.error('GPT-4o-mini summarization error:', error);
     throw new Error(`Summarization failed: ${error.message}`);
   }
 };
