@@ -12,7 +12,7 @@ from io import BytesIO
 import tempfile
 
 # Configuration
-BASE_URL = "https://noteforge-audio.preview.emergentagent.com"
+BASE_URL = "https://noteforge-ai.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 class NoteForgeBackendTester:

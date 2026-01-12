@@ -7,7 +7,7 @@ import requests
 import json
 
 # Configuration
-BASE_URL = "https://noteforge-audio.preview.emergentagent.com"
+BASE_URL = "https://noteforge-ai.preview.emergentagent.com"
 API_URL = f"{BASE_URL}/api"
 
 def test_basic_connectivity():
