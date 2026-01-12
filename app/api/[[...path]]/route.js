@@ -48,25 +48,47 @@ const parseFormData = async (request) => {
   });
 };
 
-// Transcribe audio/video using Whisper
+// Transcribe audio/video using Whisper with retry logic
 const transcribeAudio = async (audioBuffer, filename) => {
-  try {
-    // Create a File-like object from buffer
-    const file = new File([audioBuffer], filename, { 
-      type: filename.endsWith('.mp3') ? 'audio/mpeg' : 'audio/wav' 
-    });
+  const maxRetries = 3;
+  let lastError;
 
-    const transcription = await openai.audio.transcriptions.create({
-      file: file,
-      model: 'whisper-1',
-      language: 'en',
-    });
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`Transcription attempt ${attempt}/${maxRetries} for ${filename}`);
+      
+      // Create a File-like object from buffer
+      const file = new File([audioBuffer], filename, { 
+        type: filename.endsWith('.mp3') ? 'audio/mpeg' : 'audio/wav' 
+      });
 
-    return transcription.text;
-  } catch (error) {
-    console.error('Whisper transcription error:', error);
-    throw new Error(`Transcription failed: ${error.message}`);
+      const transcription = await openai.audio.transcriptions.create({
+        file: file,
+        model: 'whisper-1',
+        language: 'en',
+      });
+
+      console.log(`Transcription successful on attempt ${attempt}`);
+      return transcription.text;
+    } catch (error) {
+      console.error(`Transcription attempt ${attempt} failed:`, error.message);
+      lastError = error;
+      
+      // If it's a connection error and we have retries left, wait and retry
+      if (attempt < maxRetries && (error.message.includes('ECONNRESET') || error.message.includes('Connection error'))) {
+        const waitTime = Math.pow(2, attempt) * 1000; // Exponential backoff: 2s, 4s, 8s
+        console.log(`Waiting ${waitTime}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        continue;
+      }
+      
+      // If it's the last attempt or a non-retryable error, throw
+      break;
+    }
   }
+
+  console.error('All transcription attempts failed:', lastError);
+  throw new Error(`Transcription failed: ${lastError.message}`);
 };
 
 // Extract text from PDF
