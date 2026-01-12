@@ -80,6 +80,22 @@ const extractTextFromPDF = async (pdfBuffer) => {
   }
 };
 
+// Extract YouTube video ID from URL
+const extractYouTubeVideoId = (url) => {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+    /youtube\.com\/watch\?.*v=([^&\n?#]+)/
+  ];
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  return null;
+};
+
 // Extract audio from YouTube video
 const extractAudioFromYouTube = async (youtubeUrl) => {
   try {
@@ -91,6 +107,7 @@ const extractAudioFromYouTube = async (youtubeUrl) => {
     // Get video info
     const info = await ytdl.getInfo(youtubeUrl);
     const title = info.videoDetails.title;
+    const videoId = extractYouTubeVideoId(youtubeUrl);
 
     // Download audio in-memory
     const audioStream = ytdl(youtubeUrl, {
@@ -105,7 +122,7 @@ const extractAudioFromYouTube = async (youtubeUrl) => {
     }
     const audioBuffer = Buffer.concat(chunks);
 
-    return { audioBuffer, title };
+    return { audioBuffer, title, videoId, youtubeUrl };
   } catch (error) {
     console.error('YouTube extraction error:', error);
     throw new Error(`YouTube audio extraction failed: ${error.message}`);
