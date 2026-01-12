@@ -11,7 +11,7 @@ import os
 from typing import Dict, Any
 
 # Get base URL from environment
-BASE_URL = "https://noteforge-ai.preview.emergentagent.com"
+BASE_URL = "https://noteai-assist.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
 def test_text_processing():
