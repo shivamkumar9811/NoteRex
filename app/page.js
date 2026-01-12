@@ -166,6 +166,7 @@ export default function NoteForgeAI() {
     }
 
     setProcessing(true);
+    setProcessingStage('transcribing');
     try {
       const response = await fetch('/api/process', {
         method: 'POST',
@@ -177,6 +178,8 @@ export default function NoteForgeAI() {
 
       if (data.success) {
         setCurrentResult(data.data);
+        setEditedTranscript(data.data.transcript);
+        setResultTab('video');
         toast.success('YouTube video processed successfully!');
         setActiveView('result');
       } else {
@@ -186,6 +189,44 @@ export default function NoteForgeAI() {
       toast.error('YouTube processing failed: ' + error.message);
     } finally {
       setProcessing(false);
+      setProcessingStage('');
+    }
+  };
+
+  const regenerateNotes = async () => {
+    if (!editedTranscript.trim()) {
+      toast.error('Transcript is empty');
+      return;
+    }
+
+    setProcessing(true);
+    setProcessingStage('summarizing');
+    try {
+      const response = await fetch('/api/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: editedTranscript, sourceType: 'text' }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Update only the summaries, keep other data
+        setCurrentResult({
+          ...currentResult,
+          transcript: editedTranscript,
+          summaries: data.data.summaries,
+        });
+        toast.success('Notes regenerated from edited transcript!');
+        setResultTab('notes');
+      } else {
+        toast.error(data.error || 'Failed to regenerate notes');
+      }
+    } catch (error) {
+      toast.error('Failed to regenerate notes: ' + error.message);
+    } finally {
+      setProcessing(false);
+      setProcessingStage('');
     }
   };
 
