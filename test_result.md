@@ -565,18 +565,97 @@ GOOGLE_API_KEY=...     # Real Google AI Studio API key
 5. UI displays results in tabbed interface
 6. User can edit transcript and regenerate notes (cost-free, reuses transcript)
 
-### Ready for Testing:
-
-**Priority Tests:**
-1. YouTube URL processing with video embedding
-2. Audio file transcription
-3. Video file transcription  
-4. Text summarization
-5. Transcript editing and regeneration
-6. All four summary formats
-
 **Next Steps:**
-- Run backend testing agent to verify API integration
-- Test transcript editing and regeneration feature
-- Verify YouTube video player embedding
-- Test all summary formats
+1. Main agent must fix API quota and YouTube library issues
+2. Retest all backend functionality after fixes
+3. Verify end-to-end flow works with real content
+
+---
+
+## Backend Testing Results - 2025-01-11 (Testing Agent - Final Report)
+
+### Testing Agent Report
+
+**Status**: ❌ **CRITICAL ISSUES IDENTIFIED - REQUIRES IMMEDIATE ATTENTION**
+
+#### Root Cause Analysis:
+
+**1. GEMINI API QUOTA EXHAUSTED** 🚨
+- **Problem**: Google Gemini API key has exceeded free tier quota limits
+- **Error**: `429 Too Many Requests - You exceeded your current quota`
+- **Details**: 
+  - Free tier limits: ~6M input tokens/day for gemini-2.0-flash-exp
+  - Quota metrics exceeded: generate_content_free_tier_requests, input_token_count
+  - Retry suggested in 27 seconds, but quota is fully exhausted
+- **Impact**: ALL text processing and summarization features are blocked
+
+**2. YOUTUBE PROCESSING FAILURE** 🚨
+- **Problem**: ytdl-core library returning 403 Forbidden errors
+- **Error**: `YouTube audio extraction failed: Status code: 403`
+- **Root Cause**: YouTube's anti-bot measures in 2025 block ytdl-core
+- **Impact**: ALL YouTube video processing is blocked
+
+#### Test Results Summary:
+- ❌ **API Connectivity**: Connection timeout (server responding but slow)
+- ❌ **Text Processing**: Failed - Gemini API quota exhausted
+- ❌ **YouTube Processing**: Failed - ytdl-core 403 errors
+- ❌ **Error Handling**: Failed - All endpoints returning 520 errors
+
+#### Critical Fixes Required:
+
+**PRIORITY 1: Gemini API Quota Issue**
+```bash
+# Immediate solutions (choose one):
+1. Generate new API key in fresh Google AI Studio project
+2. Upgrade to paid Tier 1 (~$0.10-2/M tokens)
+3. Switch to alternative model provider:
+   - OpenAI GPT-4o-mini (free tier: 50k TPM)
+   - Anthropic Claude 3.5 Sonnet (10k tokens/day)
+   - Mistral Large (10k tokens/day)
+```
+
+**PRIORITY 2: YouTube Processing Fix**
+```bash
+# Replace ytdl-core with modern alternative:
+npm uninstall ytdl-core
+npm install @distube/ytdl-core
+# OR
+npm install yt-dlp-wrap
+```
+
+#### Technical Details:
+
+**Current Configuration (WORKING):**
+- ✅ OpenAI API: Configured correctly for Whisper
+- ✅ Server: Running on port 3000
+- ✅ Environment: All variables set properly
+
+**Current Configuration (BROKEN):**
+- ❌ Gemini API: Quota exhausted, needs new key or provider
+- ❌ YouTube: ytdl-core blocked by YouTube's 2025 anti-bot measures
+
+#### Recommended Solutions:
+
+**Option A: Quick Fix (Recommended)**
+1. Generate new Gemini API key in fresh Google AI Studio project
+2. Update ytdl-core to @distube/ytdl-core
+3. Test with small content to verify quota reset
+
+**Option B: Robust Long-term Solution**
+1. Switch to OpenAI GPT-4o-mini for summarization (higher free quota)
+2. Implement yt-dlp-wrap for YouTube processing
+3. Add retry logic with exponential backoff
+
+#### Action Items for Main Agent:
+1. **CRITICAL**: Generate new Gemini API key OR switch to alternative provider
+2. **CRITICAL**: Replace ytdl-core with @distube/ytdl-core or yt-dlp-wrap
+3. **HIGH**: Update package.json with new dependencies
+4. **HIGH**: Test with minimal content to verify fixes
+5. **MEDIUM**: Implement quota monitoring to prevent future exhaustion
+
+#### Next Steps:
+1. Main agent must fix API quota and YouTube library issues
+2. Retest all backend functionality after fixes
+3. Verify end-to-end flow works with real content
+
+---
