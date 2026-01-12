@@ -206,7 +206,7 @@ class BackendTester:
                 start_time = time.time()
                 response = requests.post(
                     f"{API_BASE}/process",
-                    json=payload,
+                    json=test_case["payload"],
                     headers={"Content-Type": "application/json"},
                     timeout=30
                 )
