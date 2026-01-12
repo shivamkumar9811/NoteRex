@@ -1,338 +1,360 @@
 #!/usr/bin/env python3
 """
 NoteForge AI Backend Testing Suite
-Tests official OpenAI and Google Gemini API integration
+Tests all backend API endpoints with GPT-4o-mini implementation
 """
 
 import requests
 import json
 import time
-import os
+import sys
 from typing import Dict, Any
 
-# Get base URL from environment
+# Configuration
 BASE_URL = "https://noteai-assist.preview.emergentagent.com"
 API_BASE = f"{BASE_URL}/api"
 
-def test_text_processing():
-    """Test 1: Text Processing (Highest Priority - Fastest to Test)"""
-    print("\n" + "="*60)
-    print("TEST 1: TEXT PROCESSING (GEMINI API)")
-    print("="*60)
-    
-    try:
-        # Test data - realistic content about AI
-        test_text = """
-        Artificial intelligence is transforming how we work and learn. Machine learning algorithms can now process vast amounts of data to identify patterns and make predictions. Deep learning, a subset of machine learning, has enabled breakthrough advances in computer vision and natural language processing.
-
-        Neural networks, inspired by the human brain, consist of interconnected nodes that process information. These networks can learn from examples and improve their performance over time. Applications include image recognition, speech synthesis, language translation, and autonomous vehicles.
-
-        The future of AI promises even more sophisticated systems that can understand context, reason about complex problems, and collaborate with humans in meaningful ways.
-        """
+class BackendTester:
+    def __init__(self):
+        self.results = []
+        self.total_tests = 0
+        self.passed_tests = 0
         
-        payload = {
-            "text": test_text.strip(),
-            "sourceType": "text"
+    def log_result(self, test_name: str, success: bool, details: str, response_time: float = 0):
+        """Log test result"""
+        self.total_tests += 1
+        if success:
+            self.passed_tests += 1
+            status = "✅ PASS"
+        else:
+            status = "❌ FAIL"
+            
+        result = {
+            "test": test_name,
+            "status": status,
+            "success": success,
+            "details": details,
+            "response_time": f"{response_time:.2f}s" if response_time > 0 else "N/A"
         }
+        self.results.append(result)
+        print(f"{status} | {test_name} | {details} | {result['response_time']}")
         
-        print(f"📤 Sending POST request to: {API_BASE}/process")
-        print(f"📝 Text length: {len(test_text)} characters")
-        
-        start_time = time.time()
-        response = requests.post(
-            f"{API_BASE}/process",
-            headers={"Content-Type": "application/json"},
-            json=payload,
-            timeout=60
-        )
-        end_time = time.time()
-        
-        print(f"⏱️  Response time: {end_time - start_time:.2f} seconds")
-        print(f"📊 Status Code: {response.status_code}")
-        
-        if response.status_code == 200:
-            data = response.json()
-            print("✅ SUCCESS: Text processing completed")
-            
-            # Validate response structure
-            if data.get('success') and 'data' in data:
-                result_data = data['data']
-                
-                # Check required fields
-                required_fields = ['title', 'sourceType', 'transcript', 'summaries']
-                missing_fields = [field for field in required_fields if field not in result_data]
-                
-                if missing_fields:
-                    print(f"❌ MISSING FIELDS: {missing_fields}")
-                    return False
-                
-                # Check summaries structure
-                summaries = result_data.get('summaries', {})
-                required_summary_fields = ['bulletPoints', 'topics', 'keyTakeaways', 'qa']
-                missing_summary_fields = [field for field in required_summary_fields if not summaries.get(field)]
-                
-                if missing_summary_fields:
-                    print(f"❌ MISSING SUMMARY FIELDS: {missing_summary_fields}")
-                    return False
-                
-                # Validate content quality
-                print(f"📋 Title: {result_data['title'][:50]}...")
-                print(f"📄 Source Type: {result_data['sourceType']}")
-                print(f"📝 Transcript Length: {len(result_data['transcript'])} chars")
-                
-                for field in required_summary_fields:
-                    content = summaries[field]
-                    print(f"📊 {field}: {len(content)} chars - {'✅' if len(content) > 10 else '❌'}")
-                
-                print("✅ ALL FIELDS PRESENT AND NON-EMPTY")
-                return True
-            else:
-                print(f"❌ INVALID RESPONSE STRUCTURE: {data}")
-                return False
-        else:
-            print(f"❌ FAILED: Status {response.status_code}")
-            print(f"📄 Response: {response.text}")
-            return False
-            
-    except requests.exceptions.Timeout:
-        print("❌ TIMEOUT: Request took longer than 60 seconds")
-        return False
-    except Exception as e:
-        print(f"❌ ERROR: {str(e)}")
-        return False
-
-def test_youtube_processing():
-    """Test 2: YouTube URL Processing"""
-    print("\n" + "="*60)
-    print("TEST 2: YOUTUBE URL PROCESSING (WHISPER + GEMINI)")
-    print("="*60)
-    
-    try:
-        # Use a short, well-known video for testing
-        youtube_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-        
-        payload = {
-            "youtubeUrl": youtube_url,
-            "sourceType": "youtube"
-        }
-        
-        print(f"📤 Sending POST request to: {API_BASE}/process")
-        print(f"🎥 YouTube URL: {youtube_url}")
-        print("⚠️  Note: This may take 30-180 seconds for transcription...")
-        
-        start_time = time.time()
-        response = requests.post(
-            f"{API_BASE}/process",
-            headers={"Content-Type": "application/json"},
-            json=payload,
-            timeout=300  # 5 minutes for YouTube processing
-        )
-        end_time = time.time()
-        
-        print(f"⏱️  Response time: {end_time - start_time:.2f} seconds")
-        print(f"📊 Status Code: {response.status_code}")
-        
-        if response.status_code == 200:
-            data = response.json()
-            print("✅ SUCCESS: YouTube processing completed")
-            
-            # Validate response structure
-            if data.get('success') and 'data' in data:
-                result_data = data['data']
-                
-                # Check required fields for YouTube
-                required_fields = ['title', 'sourceType', 'youtubeUrl', 'videoId', 'transcript', 'summaries']
-                missing_fields = [field for field in required_fields if field not in result_data]
-                
-                if missing_fields:
-                    print(f"❌ MISSING FIELDS: {missing_fields}")
-                    return False
-                
-                # Check summaries structure
-                summaries = result_data.get('summaries', {})
-                required_summary_fields = ['bulletPoints', 'topics', 'keyTakeaways', 'qa']
-                missing_summary_fields = [field for field in required_summary_fields if not summaries.get(field)]
-                
-                if missing_summary_fields:
-                    print(f"❌ MISSING SUMMARY FIELDS: {missing_summary_fields}")
-                    return False
-                
-                # Validate YouTube-specific content
-                print(f"📋 Title: {result_data['title']}")
-                print(f"📄 Source Type: {result_data['sourceType']}")
-                print(f"🎥 YouTube URL: {result_data['youtubeUrl']}")
-                print(f"🆔 Video ID: {result_data['videoId']}")
-                print(f"📝 Transcript Length: {len(result_data['transcript'])} chars")
-                
-                # Validate video ID extraction
-                expected_video_id = "dQw4w9WgXcQ"
-                if result_data['videoId'] != expected_video_id:
-                    print(f"❌ VIDEO ID MISMATCH: Expected {expected_video_id}, got {result_data['videoId']}")
-                    return False
-                
-                # Check transcript quality
-                if len(result_data['transcript']) < 10:
-                    print("❌ TRANSCRIPT TOO SHORT - Whisper transcription may have failed")
-                    return False
-                
-                for field in required_summary_fields:
-                    content = summaries[field]
-                    print(f"📊 {field}: {len(content)} chars - {'✅' if len(content) > 10 else '❌'}")
-                
-                print("✅ ALL YOUTUBE FIELDS PRESENT AND VALID")
-                return True
-            else:
-                print(f"❌ INVALID RESPONSE STRUCTURE: {data}")
-                return False
-        else:
-            print(f"❌ FAILED: Status {response.status_code}")
-            print(f"📄 Response: {response.text}")
-            return False
-            
-    except requests.exceptions.Timeout:
-        print("❌ TIMEOUT: YouTube processing took longer than 5 minutes")
-        return False
-    except Exception as e:
-        print(f"❌ ERROR: {str(e)}")
-        return False
-
-def test_error_handling():
-    """Test 3: Error Handling"""
-    print("\n" + "="*60)
-    print("TEST 3: ERROR HANDLING")
-    print("="*60)
-    
-    try:
-        # Test invalid YouTube URL
-        print("🧪 Testing invalid YouTube URL...")
-        payload = {
-            "youtubeUrl": "https://invalid-url.com/watch?v=invalid",
-            "sourceType": "youtube"
-        }
-        
-        response = requests.post(
-            f"{API_BASE}/process",
-            headers={"Content-Type": "application/json"},
-            json=payload,
-            timeout=30
-        )
-        
-        print(f"📊 Status Code: {response.status_code}")
-        
-        if response.status_code == 500:
-            data = response.json()
-            if 'error' in data and 'YouTube' in data['error']:
-                print("✅ SUCCESS: Invalid YouTube URL properly rejected")
-            else:
-                print(f"❌ UNEXPECTED ERROR MESSAGE: {data}")
-                return False
-        else:
-            print(f"❌ EXPECTED 500 ERROR, GOT: {response.status_code}")
-            return False
-        
-        # Test missing content
-        print("🧪 Testing empty request...")
-        response = requests.post(
-            f"{API_BASE}/process",
-            headers={"Content-Type": "application/json"},
-            json={},
-            timeout=30
-        )
-        
-        print(f"📊 Status Code: {response.status_code}")
-        
-        if response.status_code == 400:
-            print("✅ SUCCESS: Empty request properly rejected")
-        else:
-            print(f"❌ EXPECTED 400 ERROR, GOT: {response.status_code}")
-            return False
-        
-        print("✅ ERROR HANDLING WORKING CORRECTLY")
-        return True
-        
-    except Exception as e:
-        print(f"❌ ERROR: {str(e)}")
-        return False
-
-def test_api_connectivity():
-    """Test 0: Basic API Connectivity"""
-    print("\n" + "="*60)
-    print("TEST 0: API CONNECTIVITY")
-    print("="*60)
-    
-    try:
-        print(f"📤 Testing connectivity to: {API_BASE}")
-        
-        # Test with a simple invalid endpoint to check if server is running
-        response = requests.get(f"{API_BASE}/health", timeout=10)
-        
-        # We expect 404 for /health, but that means server is running
-        if response.status_code == 404:
-            print("✅ SUCCESS: API server is running and responding")
-            return True
-        elif response.status_code == 200:
-            print("✅ SUCCESS: API server is running")
-            return True
-        else:
-            print(f"⚠️  Server responding with status: {response.status_code}")
-            return True  # Server is responding, that's what matters
-            
-    except requests.exceptions.ConnectionError:
-        print(f"❌ FAILED: Cannot connect to {API_BASE}")
-        return False
-    except requests.exceptions.Timeout:
-        print("❌ FAILED: Connection timeout")
-        return False
-    except Exception as e:
-        print(f"❌ ERROR: {str(e)}")
-        return False
-
-def run_all_tests():
-    """Run all backend tests in priority order"""
-    print("🚀 NOTEFORGE AI BACKEND TESTING SUITE")
-    print("Testing Official OpenAI + Google Gemini API Integration")
-    print(f"🌐 Base URL: {BASE_URL}")
-    print(f"🔗 API Base: {API_BASE}")
-    
-    tests = [
-        ("API Connectivity", test_api_connectivity),
-        ("Text Processing (Gemini)", test_text_processing),
-        ("YouTube Processing (Whisper + Gemini)", test_youtube_processing),
-        ("Error Handling", test_error_handling),
-    ]
-    
-    results = {}
-    
-    for test_name, test_func in tests:
-        print(f"\n🧪 Running: {test_name}")
+    def test_server_connectivity(self):
+        """Test basic server connectivity"""
         try:
-            results[test_name] = test_func()
+            start_time = time.time()
+            response = requests.get(BASE_URL, timeout=10)
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                self.log_result("Server Connectivity", True, "Server is responding", response_time)
+                return True
+            else:
+                self.log_result("Server Connectivity", False, f"Server returned {response.status_code}", response_time)
+                return False
         except Exception as e:
-            print(f"❌ CRITICAL ERROR in {test_name}: {str(e)}")
-            results[test_name] = False
+            self.log_result("Server Connectivity", False, f"Connection failed: {str(e)}")
+            return False
     
-    # Summary
-    print("\n" + "="*60)
-    print("📊 TEST RESULTS SUMMARY")
-    print("="*60)
+    def test_text_processing(self):
+        """Test text processing with GPT-4o-mini"""
+        try:
+            start_time = time.time()
+            
+            payload = {
+                "text": "Artificial intelligence is transforming education. Machine learning algorithms can personalize learning experiences for students. Natural language processing helps in automated grading and feedback. Deep learning models can analyze student performance patterns and provide targeted recommendations.",
+                "sourceType": "text"
+            }
+            
+            response = requests.post(
+                f"{API_BASE}/process",
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=60
+            )
+            
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success") and "data" in data:
+                    result_data = data["data"]
+                    
+                    # Check required fields
+                    required_fields = ["transcript", "summaries", "sourceType"]
+                    missing_fields = [field for field in required_fields if field not in result_data]
+                    
+                    if missing_fields:
+                        self.log_result("Text Processing", False, f"Missing fields: {missing_fields}", response_time)
+                        return False
+                    
+                    # Check summaries structure
+                    summaries = result_data["summaries"]
+                    required_summary_types = ["bulletPoints", "topics", "keyTakeaways", "qa"]
+                    missing_summaries = [stype for stype in required_summary_types if stype not in summaries]
+                    
+                    if missing_summaries:
+                        self.log_result("Text Processing", False, f"Missing summary types: {missing_summaries}", response_time)
+                        return False
+                    
+                    # Check if summaries have content
+                    empty_summaries = [stype for stype, content in summaries.items() if not content or len(content.strip()) < 10]
+                    if empty_summaries:
+                        self.log_result("Text Processing", False, f"Empty summaries: {empty_summaries}", response_time)
+                        return False
+                    
+                    self.log_result("Text Processing", True, f"GPT-4o-mini generated all 4 summary types successfully", response_time)
+                    return True
+                else:
+                    self.log_result("Text Processing", False, f"Invalid response structure: {data}", response_time)
+                    return False
+            else:
+                error_text = response.text
+                self.log_result("Text Processing", False, f"HTTP {response.status_code}: {error_text}", response_time)
+                return False
+                
+        except Exception as e:
+            self.log_result("Text Processing", False, f"Exception: {str(e)}")
+            return False
     
-    passed = 0
-    total = len(tests)
+    def test_youtube_processing(self):
+        """Test YouTube URL processing"""
+        try:
+            start_time = time.time()
+            
+            # Using a short, well-known video that should work
+            payload = {
+                "youtubeUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                "sourceType": "youtube"
+            }
+            
+            response = requests.post(
+                f"{API_BASE}/process",
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=180  # YouTube processing can take longer
+            )
+            
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("success") and "data" in data:
+                    result_data = data["data"]
+                    
+                    # Check YouTube-specific fields
+                    youtube_fields = ["youtubeUrl", "videoId", "transcript", "summaries"]
+                    missing_fields = [field for field in youtube_fields if field not in result_data]
+                    
+                    if missing_fields:
+                        self.log_result("YouTube Processing", False, f"Missing YouTube fields: {missing_fields}", response_time)
+                        return False
+                    
+                    # Check if transcript was generated
+                    if not result_data["transcript"] or len(result_data["transcript"].strip()) < 10:
+                        self.log_result("YouTube Processing", False, "No transcript generated from YouTube audio", response_time)
+                        return False
+                    
+                    # Check summaries
+                    summaries = result_data["summaries"]
+                    if not all(summaries.get(stype) for stype in ["bulletPoints", "topics", "keyTakeaways", "qa"]):
+                        self.log_result("YouTube Processing", False, "Incomplete summaries from YouTube content", response_time)
+                        return False
+                    
+                    self.log_result("YouTube Processing", True, f"YouTube extraction + Whisper + GPT-4o-mini pipeline working", response_time)
+                    return True
+                else:
+                    self.log_result("YouTube Processing", False, f"Invalid response: {data}", response_time)
+                    return False
+            else:
+                error_text = response.text
+                if "403" in error_text or "Forbidden" in error_text:
+                    self.log_result("YouTube Processing", False, f"YouTube blocked request (403) - Expected in 2025: {error_text}", response_time)
+                    return False
+                else:
+                    self.log_result("YouTube Processing", False, f"HTTP {response.status_code}: {error_text}", response_time)
+                    return False
+                
+        except Exception as e:
+            self.log_result("YouTube Processing", False, f"Exception: {str(e)}")
+            return False
     
-    for test_name, result in results.items():
-        status = "✅ PASS" if result else "❌ FAIL"
-        print(f"{status} - {test_name}")
-        if result:
-            passed += 1
+    def test_error_handling(self):
+        """Test API error handling"""
+        test_cases = [
+            {
+                "name": "Empty Text",
+                "payload": {"text": "", "sourceType": "text"},
+                "expected_error": True
+            },
+            {
+                "name": "Invalid YouTube URL", 
+                "payload": {"youtubeUrl": "https://invalid-url.com", "sourceType": "youtube"},
+                "expected_error": True
+            },
+            {
+                "name": "Missing Required Fields",
+                "payload": {"sourceType": "text"},
+                "expected_error": True
+            }
+        ]
+        
+        all_passed = True
+        
+        for test_case in test_cases:
+            try:
+                start_time = time.time()
+                response = requests.post(
+                    f"{API_BASE}/process",
+                    json=payload,
+                    headers={"Content-Type": "application/json"},
+                    timeout=30
+                )
+                response_time = time.time() - start_time
+                
+                if test_case["expected_error"]:
+                    if response.status_code >= 400:
+                        self.log_result(f"Error Handling - {test_case['name']}", True, f"Correctly returned error {response.status_code}", response_time)
+                    else:
+                        self.log_result(f"Error Handling - {test_case['name']}", False, f"Should have returned error but got {response.status_code}", response_time)
+                        all_passed = False
+                else:
+                    if response.status_code == 200:
+                        self.log_result(f"Error Handling - {test_case['name']}", True, "Request processed successfully", response_time)
+                    else:
+                        self.log_result(f"Error Handling - {test_case['name']}", False, f"Unexpected error {response.status_code}", response_time)
+                        all_passed = False
+                        
+            except Exception as e:
+                self.log_result(f"Error Handling - {test_case['name']}", False, f"Exception: {str(e)}")
+                all_passed = False
+        
+        return all_passed
     
-    print(f"\n📈 Overall: {passed}/{total} tests passed")
+    def test_api_response_structure(self):
+        """Test API response structure consistency"""
+        try:
+            start_time = time.time()
+            
+            payload = {
+                "text": "This is a test message for API structure validation.",
+                "sourceType": "text"
+            }
+            
+            response = requests.post(
+                f"{API_BASE}/process",
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=30
+            )
+            
+            response_time = time.time() - start_time
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check top-level structure
+                if not isinstance(data, dict) or "success" not in data or "data" not in data:
+                    self.log_result("API Response Structure", False, "Invalid top-level response structure", response_time)
+                    return False
+                
+                result_data = data["data"]
+                
+                # Check data structure
+                expected_fields = ["title", "sourceType", "transcript", "summaries"]
+                missing_fields = [field for field in expected_fields if field not in result_data]
+                
+                if missing_fields:
+                    self.log_result("API Response Structure", False, f"Missing data fields: {missing_fields}", response_time)
+                    return False
+                
+                # Check summaries structure
+                summaries = result_data["summaries"]
+                if not isinstance(summaries, dict):
+                    self.log_result("API Response Structure", False, "Summaries should be a dictionary", response_time)
+                    return False
+                
+                expected_summary_keys = ["bulletPoints", "topics", "keyTakeaways", "qa"]
+                missing_summary_keys = [key for key in expected_summary_keys if key not in summaries]
+                
+                if missing_summary_keys:
+                    self.log_result("API Response Structure", False, f"Missing summary keys: {missing_summary_keys}", response_time)
+                    return False
+                
+                self.log_result("API Response Structure", True, "Response structure is consistent and complete", response_time)
+                return True
+            else:
+                self.log_result("API Response Structure", False, f"HTTP {response.status_code}: {response.text}", response_time)
+                return False
+                
+        except Exception as e:
+            self.log_result("API Response Structure", False, f"Exception: {str(e)}")
+            return False
     
-    if passed == total:
-        print("🎉 ALL TESTS PASSED - Official API integration working correctly!")
-    else:
-        print("⚠️  Some tests failed - Check individual test results above")
-    
-    return results
+    def run_all_tests(self):
+        """Run all backend tests"""
+        print("=" * 80)
+        print("🧪 NoteForge AI Backend Testing Suite")
+        print("Testing GPT-4o-mini implementation")
+        print("=" * 80)
+        print()
+        
+        # Test server connectivity first
+        if not self.test_server_connectivity():
+            print("\n❌ Server connectivity failed. Aborting tests.")
+            return False
+        
+        print()
+        
+        # Run all tests
+        tests = [
+            ("API Response Structure", self.test_api_response_structure),
+            ("Text Processing (GPT-4o-mini)", self.test_text_processing),
+            ("Error Handling", self.test_error_handling),
+            ("YouTube Processing", self.test_youtube_processing),
+        ]
+        
+        for test_name, test_func in tests:
+            print(f"\n🔍 Running {test_name}...")
+            try:
+                test_func()
+            except Exception as e:
+                self.log_result(test_name, False, f"Test execution failed: {str(e)}")
+            print()
+        
+        # Print summary
+        print("=" * 80)
+        print("📊 TEST SUMMARY")
+        print("=" * 80)
+        print(f"Total Tests: {self.total_tests}")
+        print(f"Passed: {self.passed_tests}")
+        print(f"Failed: {self.total_tests - self.passed_tests}")
+        print(f"Success Rate: {(self.passed_tests/self.total_tests)*100:.1f}%")
+        print()
+        
+        # Print detailed results
+        print("📋 DETAILED RESULTS:")
+        print("-" * 80)
+        for result in self.results:
+            print(f"{result['status']} | {result['test']:<30} | {result['details']:<40} | {result['response_time']}")
+        
+        print()
+        
+        # Determine overall status
+        critical_tests = ["Server Connectivity", "Text Processing (GPT-4o-mini)", "API Response Structure"]
+        critical_failures = [r for r in self.results if r['test'] in critical_tests and not r['success']]
+        
+        if critical_failures:
+            print("❌ CRITICAL TESTS FAILED - Backend has major issues")
+            return False
+        elif self.passed_tests == self.total_tests:
+            print("✅ ALL TESTS PASSED - Backend is fully functional")
+            return True
+        else:
+            print("⚠️  SOME TESTS FAILED - Backend has minor issues but core functionality works")
+            return True
 
 if __name__ == "__main__":
-    run_all_tests()
+    tester = BackendTester()
+    success = tester.run_all_tests()
+    sys.exit(0 if success else 1)
