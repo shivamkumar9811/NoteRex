@@ -562,7 +562,7 @@ export default function NoteForgeAI() {
             </button>
             <div className="flex items-center gap-4">
               <Badge variant="secondary" className="text-xs">
-                Powered by Whisper + Gemini 2.0
+                Powered by Whisper + GPT-4o-mini
               </Badge>
               <Button 
                 variant="ghost" 
