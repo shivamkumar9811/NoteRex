@@ -95,6 +95,7 @@ export default function NoteForgeAI() {
     }
 
     setProcessing(true);
+    setProcessingStage('transcribing');
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -109,6 +110,8 @@ export default function NoteForgeAI() {
 
       if (data.success) {
         setCurrentResult(data.data);
+        setEditedTranscript(data.data.transcript);
+        setResultTab(data.data.sourceType === 'youtube' ? 'video' : 'transcript');
         toast.success('Processing complete!');
         setActiveView('result');
       } else {
@@ -118,6 +121,7 @@ export default function NoteForgeAI() {
       toast.error('Processing failed: ' + error.message);
     } finally {
       setProcessing(false);
+      setProcessingStage('');
     }
   };
 
