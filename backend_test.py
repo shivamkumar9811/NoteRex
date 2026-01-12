@@ -98,7 +98,7 @@ class BackendTester:
                         return False
                     
                     # Check if summaries have content
-                    empty_summaries = [stype for stype, content in summaries.items() if not content or len(content.strip()) < 10]
+                    empty_summaries = [stype for stype, content in summaries.items() if not content or (isinstance(content, str) and len(content.strip()) < 10)]
                     if empty_summaries:
                         self.log_result("Text Processing", False, f"Empty summaries: {empty_summaries}", response_time)
                         return False
