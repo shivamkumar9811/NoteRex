@@ -197,7 +197,7 @@ export async function POST(request) {
 
         if (youtubeUrl) {
           // Process YouTube video
-          const { audioBuffer, title } = await extractAudioFromYouTube(youtubeUrl);
+          const { audioBuffer, title, videoId, youtubeUrl: url } = await extractAudioFromYouTube(youtubeUrl);
           
           // Transcribe audio using Whisper
           const transcript = await transcribeAudio(audioBuffer, 'youtube-audio.mp3');
@@ -210,6 +210,8 @@ export async function POST(request) {
             data: {
               title,
               sourceType: 'youtube',
+              youtubeUrl: url,
+              videoId,
               transcript,
               summaries,
             },
