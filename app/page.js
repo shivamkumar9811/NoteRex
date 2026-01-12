@@ -784,96 +784,184 @@ export default function NoteForgeAI() {
         {activeView === 'result' && (
           <div className="space-y-6">
             {currentResult ? (
-              <div className="max-w-4xl mx-auto space-y-6">
-                {/* Save Button */}
+              <div className="max-w-6xl mx-auto space-y-6">
+                {/* Header with Save Button */}
                 <Card>
                   <CardContent className="pt-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="font-semibold">{currentResult.title}</h3>
+                        <h3 className="font-semibold text-lg">{currentResult.title}</h3>
                         <p className="text-sm text-muted-foreground">Source: {currentResult.sourceType}</p>
                       </div>
-                      <Button onClick={saveNote}>
-                        Save to Notes
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button variant="outline" onClick={() => setActiveView('upload')}>
+                          New Upload
+                        </Button>
+                        <Button onClick={saveNote}>
+                          <Save className="w-4 h-4 mr-2" />
+                          Save to Notes
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Transcript */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Full Transcript</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ScrollArea className="h-64 w-full rounded-md border p-4">
-                      <p className="text-sm whitespace-pre-wrap">{currentResult.transcript}</p>
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
+                {/* Tabbed Interface */}
+                <Tabs value={resultTab} onValueChange={setResultTab} className="w-full">
+                  <TabsList className="grid w-full grid-cols-4">
+                    {currentResult.videoId && (
+                      <TabsTrigger value="video">
+                        <Youtube className="w-4 h-4 mr-2" />
+                        Video
+                      </TabsTrigger>
+                    )}
+                    <TabsTrigger value="transcript">
+                      <FileText className="w-4 h-4 mr-2" />
+                      Transcript
+                    </TabsTrigger>
+                    <TabsTrigger value="notes">
+                      <Brain className="w-4 h-4 mr-2" />
+                      Notes
+                    </TabsTrigger>
+                    <TabsTrigger value="qa">
+                      <MessageSquareQuote className="w-4 h-4 mr-2" />
+                      Q&A
+                    </TabsTrigger>
+                  </TabsList>
 
-                {/* Summaries */}
-                <div className="grid gap-6 md:grid-cols-2">
-                  {/* Bullet Points */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-lg">
-                        <ListChecks className="w-5 h-5 text-indigo-600" />
-                        Bullet Points
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ScrollArea className="h-64 w-full">
-                        <div className="text-sm whitespace-pre-wrap">{currentResult.summaries.bulletPoints}</div>
-                      </ScrollArea>
-                    </CardContent>
-                  </Card>
+                  {/* Video Tab */}
+                  {currentResult.videoId && (
+                    <TabsContent value="video" className="space-y-4">
+                      <Card>
+                        <CardContent className="pt-6">
+                          <div className="aspect-video w-full">
+                            <iframe
+                              width="100%"
+                              height="100%"
+                              src={`https://www.youtube.com/embed/${currentResult.videoId}`}
+                              title="YouTube video player"
+                              frameBorder="0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              className="rounded-lg"
+                            ></iframe>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </TabsContent>
+                  )}
 
-                  {/* Topics */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-lg">
-                        <Brain className="w-5 h-5 text-purple-600" />
-                        Topic Structure
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ScrollArea className="h-64 w-full">
-                        <div className="text-sm whitespace-pre-wrap">{currentResult.summaries.topics}</div>
-                      </ScrollArea>
-                    </CardContent>
-                  </Card>
+                  {/* Transcript Tab with Editing */}
+                  <TabsContent value="transcript" className="space-y-4">
+                    <Card>
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-lg">Full Transcript</CardTitle>
+                          <Button 
+                            onClick={regenerateNotes} 
+                            disabled={processing}
+                            variant="outline"
+                            size="sm"
+                          >
+                            {processing && processingStage === 'summarizing' ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Regenerating...
+                              </>
+                            ) : (
+                              <>
+                                <RefreshCw className="w-4 h-4 mr-2" />
+                                Regenerate Notes
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                        <CardDescription>
+                          Edit the transcript and click "Regenerate Notes" to create new summaries
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Textarea
+                          value={editedTranscript}
+                          onChange={(e) => setEditedTranscript(e.target.value)}
+                          rows={20}
+                          className="font-mono text-sm"
+                          placeholder="Transcript will appear here..."
+                        />
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
 
-                  {/* Key Takeaways */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-lg">
-                        <Lightbulb className="w-5 h-5 text-yellow-600" />
-                        Key Takeaways
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ScrollArea className="h-64 w-full">
-                        <div className="text-sm whitespace-pre-wrap">{currentResult.summaries.keyTakeaways}</div>
-                      </ScrollArea>
-                    </CardContent>
-                  </Card>
+                  {/* Notes Tab */}
+                  <TabsContent value="notes" className="space-y-4">
+                    <div className="grid gap-6 md:grid-cols-2">
+                      {/* Bullet Points */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <ListChecks className="w-5 h-5 text-indigo-600" />
+                            Bullet Points
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ScrollArea className="h-96 w-full">
+                            <div className="text-sm whitespace-pre-wrap">{currentResult.summaries.bulletPoints}</div>
+                          </ScrollArea>
+                        </CardContent>
+                      </Card>
 
-                  {/* Q&A */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-lg">
-                        <MessageSquareQuote className="w-5 h-5 text-pink-600" />
-                        Q&A for Revision
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ScrollArea className="h-64 w-full">
-                        <div className="text-sm whitespace-pre-wrap">{currentResult.summaries.qa}</div>
-                      </ScrollArea>
-                    </CardContent>
-                  </Card>
-                </div>
+                      {/* Topics */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <Brain className="w-5 h-5 text-purple-600" />
+                            Topic Structure
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ScrollArea className="h-96 w-full">
+                            <div className="text-sm whitespace-pre-wrap">{currentResult.summaries.topics}</div>
+                          </ScrollArea>
+                        </CardContent>
+                      </Card>
+
+                      {/* Key Takeaways */}
+                      <Card className="md:col-span-2">
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <Lightbulb className="w-5 h-5 text-yellow-600" />
+                            Key Takeaways & Concepts
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ScrollArea className="h-64 w-full">
+                            <div className="text-sm whitespace-pre-wrap">{currentResult.summaries.keyTakeaways}</div>
+                          </ScrollArea>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </TabsContent>
+
+                  {/* Q&A Tab */}
+                  <TabsContent value="qa" className="space-y-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-lg">
+                          <MessageSquareQuote className="w-5 h-5 text-pink-600" />
+                          Q&A for Revision & Exam Prep
+                        </CardTitle>
+                        <CardDescription>
+                          Study these questions to test your understanding
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <ScrollArea className="h-96 w-full">
+                          <div className="text-sm whitespace-pre-wrap">{currentResult.summaries.qa}</div>
+                        </ScrollArea>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
               </div>
             ) : (
               <Card className="max-w-md mx-auto">
