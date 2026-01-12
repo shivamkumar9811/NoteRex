@@ -132,6 +132,7 @@ export default function NoteForgeAI() {
     }
 
     setProcessing(true);
+    setProcessingStage('summarizing');
     try {
       const response = await fetch('/api/process', {
         method: 'POST',
@@ -143,6 +144,8 @@ export default function NoteForgeAI() {
 
       if (data.success) {
         setCurrentResult(data.data);
+        setEditedTranscript(data.data.transcript);
+        setResultTab('transcript');
         toast.success('Processing complete!');
         setActiveView('result');
       } else {
@@ -152,6 +155,7 @@ export default function NoteForgeAI() {
       toast.error('Processing failed: ' + error.message);
     } finally {
       setProcessing(false);
+      setProcessingStage('');
     }
   };
 
