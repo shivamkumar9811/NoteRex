@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, where } from 'firebase/firestore';
 import openai from '@/lib/openai';
-import geminiClient from '@/lib/gemini';
+import genAI from '@/lib/gemini';
 import { v4 as uuidv4 } from 'uuid';
 import Busboy from 'busboy';
 import pdf from 'pdf-parse';
