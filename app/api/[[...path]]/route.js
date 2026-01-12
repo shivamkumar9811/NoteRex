@@ -129,44 +129,34 @@ const extractAudioFromYouTube = async (youtubeUrl) => {
   }
 };
 
-// Generate AI summaries using Gemini via Emergent Gateway
+// Generate AI summaries using Google Gemini
 const generateSummaries = async (text) => {
   try {
-    // Use OpenAI chat completions format with Gemini model through Emergent gateway
-    const completion = await geminiClient.chat.completions.create({
-      model: 'gemini-2.0-flash-exp',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are an expert note-taking assistant. Always respond with valid JSON only.'
-        },
-        {
-          role: 'user',
-          content: `Analyze the following text and provide 4 different types of summaries.
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
+
+    const prompt = `Analyze the following text and provide 4 different types of summaries for studying.
 
 Provide ONLY a valid JSON response (no markdown, no code blocks) in this exact format:
 {
-  "bulletPoints": "string with bullet points",
-  "topics": "string with topic-wise organization",
-  "keyTakeaways": "string with key insights",
-  "qa": "string with Q&A pairs"
+  "bulletPoints": "Comprehensive bullet-point summary with key points",
+  "topics": "Topic-wise organization with structured breakdown",
+  "keyTakeaways": "Key insights and important concepts to remember",
+  "qa": "Question and Answer pairs for exam preparation and revision"
 }
 
 Text to analyze:
-${text}`
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 2000,
-      response_format: { type: "json_object" }
-    });
+${text}`;
 
-    const summaryText = completion.choices[0].message.content;
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const summaryText = response.text();
 
     // Parse JSON response
     let summaries;
     try {
-      summaries = JSON.parse(summaryText);
+      // Remove markdown code blocks if present
+      const cleanText = summaryText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      summaries = JSON.parse(cleanText);
       
       // Validate that all required fields are present
       if (!summaries.bulletPoints || !summaries.topics || !summaries.keyTakeaways || !summaries.qa) {
@@ -174,6 +164,8 @@ ${text}`
       }
     } catch (parseError) {
       console.error('Failed to parse summary JSON:', parseError);
+      console.error('Raw response:', summaryText);
+      
       // Fallback: create structured format from text
       summaries = {
         bulletPoints: summaryText,
