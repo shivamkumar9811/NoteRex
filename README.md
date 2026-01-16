@@ -1,1 +1,1 @@
-# Noterex
+# noteforge AI
