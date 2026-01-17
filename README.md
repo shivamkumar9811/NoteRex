@@ -319,7 +319,6 @@ Free to use, modify, and distribute.
 - OpenAI Whisper
 - Google Gemini
 - EasyOCR
-- Streamlit (prototyping)
 - Firebase
 - Open-source community
 
