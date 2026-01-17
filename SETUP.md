@@ -1,8 +1,8 @@
-# 🚀 Quick Setup Guide - NoteForge AI
+# 🚀 Quick Setup Guide - NoteRex
 
 ## Environment Configuration Required
 
-Your NoteForge AI application is built and running! Before you can test the AI features, you need to configure the environment variables.
+Your NoteRex application is built and running! Before you can test the AI features, you need to configure the environment variables.
 
 ### Step 1: Update Environment Variables
 

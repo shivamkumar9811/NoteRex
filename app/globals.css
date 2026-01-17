@@ -139,3 +139,28 @@ code {
     @apply bg-background text-foreground;
     }
 }
+
+/* Hero section animation optimizations */
+@media (prefers-reduced-motion: reduce) {
+  .hero-animated-bg {
+    animation: none !important;
+  }
+}
+
+/* Smooth scrolling and performance */
+html {
+  scroll-behavior: smooth;
+}
+
+/* GPU acceleration for animations */
+.hero-wave-layer {
+  transform: translateZ(0);
+  will-change: background-position;
+}
+
+/* Mobile optimization - reduce animation intensity */
+@media (max-width: 768px) {
+  .hero-wave-layer {
+    animation-duration: 1.5s !important;
+  }
+}

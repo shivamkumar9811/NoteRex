@@ -1,4 +1,4 @@
-# NoteForge AI 🧠✨
+# NoteRex 🧠✨
 
 **AI-Powered Note Generation Platform**
 
