@@ -98,25 +98,27 @@ export default function NotesPage() {
     }
   };
 
+  const BAD = [/I can't process PDFs/i, /don't have the capability/i, /cannot directly.*PDF/i, /The provided link is a YouTube video/i, /Please specify what information you need/i];
+  const clean = (s) => {
+    if (typeof s !== 'string') return '';
+    for (const p of BAD) if (p.test(s)) return '';
+    return s;
+  };
+
   const viewNoteDetails = (note) => {
-    // Extract data with new format support
-    const summaryFormats = note.summaryFormats || {
-      bulletNotes: [],
-      topicWise: [],
-      keyTakeaways: [],
-    };
-    // STRICT: revisionQA is NEVER extracted or used
-    const hasSummaries = summaryFormats.bulletNotes?.length > 0 || 
-                        summaryFormats.topicWise?.length > 0 || 
-                        summaryFormats.keyTakeaways?.length > 0;
+    const summaryFormats = note.summaryFormats || { bulletNotes: [], topicWise: [], keyTakeaways: [] };
+    const revisionQA = Array.isArray(note.revisionQA) ? note.revisionQA : [];
+    const hasSummaries = summaryFormats.bulletNotes?.length > 0 || summaryFormats.topicWise?.length > 0 || summaryFormats.keyTakeaways?.length > 0;
+    const hasQA = revisionQA.length > 0;
     
-    // Check if summaries exist - if not, show processing failed message
-    if (!hasSummaries) {
-      toast.error('Note processing incomplete: Summaries not generated');
+    if (!hasSummaries && !hasQA) {
+      toast.error('Note processing incomplete: No summaries or Q&A available');
       return;
     }
     
-    // Create HTML with tabs for Summary & Q&A
+    const safe = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    
+    // Create HTML with tabs for Summary, Q&A, Transcript
     const html = `
       <!DOCTYPE html>
       <html>
@@ -167,45 +169,56 @@ export default function NotesPage() {
             
             <div class="tabs">
               <button class="tab active" onclick="showTab('summary')">Summary</button>
-              <!-- STRICT: Q&A tab removed - revisionQA is NEVER rendered -->
+              ${hasQA ? '<button class="tab" onclick="showTab(\'qa\')">Q&A</button>' : ''}
               <button class="tab" onclick="showTab('transcript')">Transcript</button>
             </div>
             
             <div id="summary" class="tab-content active">
               ${hasSummaries ? `
-                ${summaryFormats.bulletNotes?.length > 0 ? `
+                ${(summaryFormats.bulletNotes || []).filter(p => clean(p).length > 0).length > 0 ? `
                   <div class="section">
                     <h3>Bullet Notes</h3>
                     <ul>
-                      ${summaryFormats.bulletNotes.map(point => `<li>• ${point}</li>`).join('')}
+                      ${(summaryFormats.bulletNotes || []).filter(p => clean(p).length > 0).map(point => `<li>• ${safe(clean(point) || point)}</li>`).join('')}
                     </ul>
                   </div>
                 ` : ''}
-                ${summaryFormats.topicWise?.length > 0 ? `
+                ${(summaryFormats.topicWise || []).filter(t => clean(t).length > 0).length > 0 ? `
                   <div class="section">
                     <h3>Topic-Wise Structure</h3>
                     <ul>
-                      ${summaryFormats.topicWise.map(topic => `<li>• ${topic}</li>`).join('')}
+                      ${(summaryFormats.topicWise || []).filter(t => clean(t).length > 0).map(topic => `<li>• ${safe(clean(topic) || topic)}</li>`).join('')}
                     </ul>
                   </div>
                 ` : ''}
-                ${summaryFormats.keyTakeaways?.length > 0 ? `
+                ${(summaryFormats.keyTakeaways || []).filter(k => clean(k).length > 0).length > 0 ? `
                   <div class="section">
                     <h3>Key Takeaways</h3>
                     <ul>
-                      ${summaryFormats.keyTakeaways.map(takeaway => `<li>• ${takeaway}</li>`).join('')}
+                      ${(summaryFormats.keyTakeaways || []).filter(k => clean(k).length > 0).map(takeaway => `<li>• ${safe(clean(takeaway) || takeaway)}</li>`).join('')}
                     </ul>
                   </div>
                 ` : ''}
-              ` : '<div class="empty">No summaries available. Processing may have failed.</div>'}
+              ` : '<div class="empty">No summaries available.</div>'}
             </div>
             
-            <!-- STRICT: Q&A section removed - revisionQA is NEVER rendered -->
+            ${hasQA ? `
+            <div id="qa" class="tab-content">
+              <div class="section">
+                ${revisionQA.map(qa => `
+                  <div class="qa-item">
+                    <div class="qa-question">Q: ${safe((qa.question || qa.q || '').trim() || 'Question')}</div>
+                    <div class="qa-answer">A: ${safe((qa.answer || qa.a || '').trim() || 'Answer')}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            ` : ''}
             
             <div id="transcript" class="tab-content">
               <div class="section">
                 <p style="white-space: pre-wrap; line-height: 1.6; color: #d1d5db;">
-                  ${note.transcript || 'No transcript available'}
+                  ${safe(clean(note.transcript || '') || 'No transcript available')}
                 </p>
               </div>
             </div>

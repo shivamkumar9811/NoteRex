@@ -51,7 +51,7 @@ import Link from 'next/link';
 import Hero3D from '@/components/Hero3D';
 import ProjectImpact from '@/components/ProjectImpact';
 import AgentProgress from '@/components/AgentProgress';
-import { startNotesPipeline } from '@/lib/services/agentPipeline';
+import { startNotesPipeline, callOnDemandAgent } from '@/lib/services/agentPipeline';
 
 // Configuration for video and step images
 // Configuration for landing page assets
@@ -460,13 +460,12 @@ export default function NoteRexAI() {
   const fetchNotes = async (search = '') => {
     try {
       setLoadingNotes(true);
-      const url = search ? `/api/notes?search=${encodeURIComponent(search)}` : '/api/notes';
+      let url = '/api/notes-mongodb';
+      if (search) url += `?search=${encodeURIComponent(search)}`;
+      if (isAuthenticated?.user?.id) url += (search ? '&' : '?') + `userId=${encodeURIComponent(isAuthenticated.user.id)}`;
       const response = await fetch(url);
       const data = await response.json();
-      
-      if (data.success) {
-        setNotes(data.data);
-      }
+      if (data.success) setNotes(data.data || []);
     } catch (error) {
       toast.error('Failed to fetch notes');
     } finally {
@@ -533,8 +532,8 @@ export default function NoteRexAI() {
           sourceType: processedData.sourceType || sourceType,
           transcript: processedData.transcript || '',
           summaryFormats: processedData.summaryFormats || { bulletNotes: [], topicWise: [], keyTakeaways: [] },
-          // STRICT: revisionQA is NEVER included in state
-          summaries: processedData.summaries || {}, // Keep for backward compatibility
+          revisionQA: Array.isArray(processedData.revisionQA) ? processedData.revisionQA : [],
+          summaries: processedData.summaries || {},
           noteId: result.noteId,
         });
         
@@ -601,8 +600,8 @@ export default function NoteRexAI() {
           sourceType: processedData.sourceType || 'text',
           transcript: processedData.transcript || textInput,
           summaryFormats: processedData.summaryFormats || { bulletNotes: [], topicWise: [], keyTakeaways: [] },
-          // STRICT: revisionQA is NEVER included in state
-          summaries: processedData.summaries || {}, // Keep for backward compatibility
+          revisionQA: Array.isArray(processedData.revisionQA) ? processedData.revisionQA : [],
+          summaries: processedData.summaries || {},
           noteId: result.noteId,
         });
         
@@ -658,12 +657,7 @@ export default function NoteRexAI() {
         setProcessingStage(message);
       });
 
-      // #region debug log
-      fetch('http://127.0.0.1:7243/ingest/607636cc-d98e-4ebe-9ce3-6155ae51aeac',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/page.js:589',message:'Pipeline result received',data:{success:result.success,hasData:!!result.data,dataKeys:result.data?Object.keys(result.data):[],hasSummaryFormats:!!result.data?.summaryFormats,hasRevisionQA:!!result.data?.revisionQA,revisionQALength:result.data?.revisionQA?.length||0,title:result.data?.title},timestamp:Date.now(),sessionId:'debug-session',runId:'pipeline-complete',hypothesisId:'A'})}).catch(()=>{});
-      // #endregion
-
       if (result.success) {
-        // Set current result with processed data
         const processedData = result.data || {};
         const newCurrentResult = {
           title: processedData.title || 'YouTube Video',
@@ -672,44 +666,23 @@ export default function NoteRexAI() {
           videoId: processedData.videoId || null,
           transcript: processedData.transcript || '',
           summaryFormats: processedData.summaryFormats || { bulletNotes: [], topicWise: [], keyTakeaways: [] },
-          // STRICT: revisionQA is NEVER included in state
-          summaries: processedData.summaries || {}, // Keep for backward compatibility
+          revisionQA: Array.isArray(processedData.revisionQA) ? processedData.revisionQA : [],
+          summaries: processedData.summaries || {},
           noteId: result.noteId,
         };
         
-        // #region debug log
-        const summaryFormatsCheck = {
-          exists: !!newCurrentResult.summaryFormats,
-          bulletNotesLength: newCurrentResult.summaryFormats?.bulletNotes?.length || 0,
-          topicWiseLength: newCurrentResult.summaryFormats?.topicWise?.length || 0,
-          keyTakeawaysLength: newCurrentResult.summaryFormats?.keyTakeaways?.length || 0,
-          summaryTabEnabled: !!(newCurrentResult.summaryFormats && (newCurrentResult.summaryFormats.bulletNotes?.length > 0 || newCurrentResult.summaryFormats.topicWise?.length > 0 || newCurrentResult.summaryFormats.keyTakeaways?.length > 0)),
-        };
-        fetch('http://127.0.0.1:7243/ingest/607636cc-d98e-4ebe-9ce3-6155ae51aeac',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/page.js:603',message:'Setting currentResult',data:{title:newCurrentResult.title,sourceType:newCurrentResult.sourceType,hasTranscript:!!newCurrentResult.transcript,transcriptLength:newCurrentResult.transcript?.length||0,summaryFormatsCheck,revisionQALength:newCurrentResult.revisionQA?.length||0,qaTabEnabled:!!(newCurrentResult.revisionQA && newCurrentResult.revisionQA.length > 0)},timestamp:Date.now(),sessionId:'debug-session',runId:'pipeline-complete',hypothesisId:'A'})}).catch(()=>{});
-        // #endregion
+        const summaryFormatsCheck = !!(newCurrentResult.summaryFormats && (newCurrentResult.summaryFormats.bulletNotes?.length > 0 || newCurrentResult.summaryFormats.topicWise?.length > 0 || newCurrentResult.summaryFormats.keyTakeaways?.length > 0));
         
         setCurrentResult(newCurrentResult);
-        
-        // Set edited transcript for editing
         setEditedTranscript(processedData.transcript || '');
-        
-        // Reset chat messages for new result
         setChatMessages([]);
-        
-        // Reset processing state
         setYoutubeUrl('');
         setProcessing(false);
         setAgentProgress(0);
         setProcessingStage('');
         
-        // Switch to result view - determine which tab should be active
-        // Priority: summary > transcript > chat (Q&A removed)
         let defaultTab = 'summary';
-        if (!summaryFormatsCheck.summaryTabEnabled) {
-          // Fallback to transcript (Q&A tab removed)
-          defaultTab = 'transcript';
-        }
-        
+        if (!summaryFormatsCheck) defaultTab = 'transcript';
         setResultTab(defaultTab);
         setActiveView('result');
         
@@ -733,7 +706,6 @@ export default function NoteRexAI() {
       toast.error('Transcript is empty');
       return;
     }
-
     setProcessing(true);
     setProcessingStage('summarizing');
     try {
@@ -742,18 +714,18 @@ export default function NoteRexAI() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: editedTranscript, sourceType: 'text' }),
       });
-
       const data = await response.json();
-
-      if (data.success) {
-        // Update only the summaries, keep other data
+      if (data.success && data.data) {
+        const d = data.data;
         setCurrentResult({
           ...currentResult,
           transcript: editedTranscript,
-          summaries: data.data.summaries,
+          summaries: d.summaries || {},
+          summaryFormats: d.summaryFormats || { bulletNotes: [], topicWise: [], keyTakeaways: [] },
+          revisionQA: Array.isArray(d.revisionQA) ? d.revisionQA : [],
         });
         toast.success('Notes regenerated from edited transcript!');
-        setResultTab('notes');
+        setResultTab('summary');
       } else {
         toast.error(data.error || 'Failed to regenerate notes');
       }
@@ -767,16 +739,20 @@ export default function NoteRexAI() {
 
   const saveNote = async () => {
     if (!currentResult) return;
-
     try {
-      const response = await fetch('/api/notes', {
+      const response = await fetch('/api/notes-mongodb', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(currentResult),
+        body: JSON.stringify({
+          title: currentResult.title,
+          sourceType: currentResult.sourceType,
+          transcript: currentResult.transcript,
+          summaryFormats: currentResult.summaryFormats || { bulletNotes: [], topicWise: [], keyTakeaways: [] },
+          revisionQA: Array.isArray(currentResult.revisionQA) ? currentResult.revisionQA : [],
+          userId: isAuthenticated?.user?.id || 'anonymous',
+        }),
       });
-
       const data = await response.json();
-
       if (data.success) {
         toast.success('Note saved successfully!');
         fetchNotes();
@@ -795,9 +771,7 @@ export default function NoteRexAI() {
 
   const deleteNote = async (firestoreId) => {
     try {
-      const response = await fetch(`/api/notes/${firestoreId}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(`/api/notes-mongodb?id=${encodeURIComponent(firestoreId)}`, { method: 'DELETE' });
 
       const data = await response.json();
 
@@ -856,25 +830,15 @@ CRITICAL INSTRUCTIONS - READ CAREFULLY:
 - Answer EXACTLY what was asked in natural, conversational plain text
 - Keep response concise (2-4 paragraphs maximum)`;
 
-      // Call On-Demand API via /api/agents
-      const response = await fetch('/api/agents', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          agentId: '696a7c31c7d6dfdf7e337d33', // Notes Generator agent
-          payload: {
-            query,
-            inputType: 'text',
-            textContent: context,
-            userId: isAuthenticated?.user?.id || 'anonymous',
-          },
-        }),
+      const agentData = await callOnDemandAgent('696a7c31c7d6dfdf7e337d33', {
+        query,
+        inputType: 'text',
+        textContent: context,
+        userId: isAuthenticated?.user?.id || 'anonymous',
       });
 
-      const data = await response.json();
-
-      if (data.success && data.data?.answer) {
-        let answerContent = data.data.answer;
+      if (agentData?.answer) {
+        let answerContent = agentData.answer;
         
         // Step 1: Try to parse JSON and extract plain text from it
         try {
@@ -964,7 +928,7 @@ CRITICAL INSTRUCTIONS - READ CAREFULLY:
           { role: 'assistant', content: answerContent.trim() },
         ]);
       } else {
-        throw new Error(data.error || 'Failed to get response');
+        throw new Error(agentData?.error || 'Failed to get response');
       }
     } catch (error) {
       toast.error('Failed to get AI response: ' + error.message);
@@ -1652,7 +1616,7 @@ CRITICAL INSTRUCTIONS - READ CAREFULLY:
 
                 {/* Tabbed Interface */}
                 <Tabs value={resultTab} onValueChange={setResultTab} className="w-full">
-                  <TabsList className={`grid w-full ${currentResult.videoId ? 'grid-cols-5' : 'grid-cols-4'}`}>
+                  <TabsList className={`grid w-full ${currentResult.videoId ? 'grid-cols-6' : 'grid-cols-5'}`}>
                     {currentResult.videoId && (
                       <TabsTrigger value="video">
                         <Youtube className="w-4 h-4 mr-2" />
@@ -1663,7 +1627,10 @@ CRITICAL INSTRUCTIONS - READ CAREFULLY:
                       <Brain className="w-4 h-4 mr-2" />
                       Summary
                     </TabsTrigger>
-                    {/* STRICT: Q&A tab removed - revisionQA is NEVER rendered */}
+                    <TabsTrigger value="qa" disabled={!currentResult.revisionQA?.length}>
+                      <MessageSquareQuote className="w-4 h-4 mr-2" />
+                      Q&A
+                    </TabsTrigger>
                     <TabsTrigger value="transcript">
                       <FileText className="w-4 h-4 mr-2" />
                       Transcript
@@ -1824,7 +1791,34 @@ CRITICAL INSTRUCTIONS - READ CAREFULLY:
                     </div>
                   </TabsContent>
 
-                  {/* STRICT: Q&A tab removed - revisionQA is NEVER rendered */}
+                  {/* Q&A Tab */}
+                  <TabsContent value="qa" className="space-y-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-lg">
+                          <MessageSquareQuote className="w-5 h-5 text-amber-600" />
+                          Revision Q&A
+                        </CardTitle>
+                        <CardDescription>Question and answer pairs for exam preparation</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <ScrollArea className="h-[400px] w-full">
+                          <div className="space-y-4">
+                            {currentResult.revisionQA?.length > 0 ? (
+                              currentResult.revisionQA.map((qa, i) => (
+                                <div key={i} className="border rounded-lg p-4 bg-muted/40">
+                                  <p className="font-semibold text-primary mb-2">Q: {(qa.question || qa.q || '').trim() || 'Question'}</p>
+                                  <p className="text-muted-foreground whitespace-pre-wrap">A: {(qa.answer || qa.a || '').trim() || 'Answer'}</p>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-muted-foreground">No Q&A pairs available.</p>
+                            )}
+                          </div>
+                        </ScrollArea>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
 
                   {/* Chat Tab */}
                   <TabsContent value="chat" className="space-y-4">

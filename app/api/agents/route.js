@@ -121,10 +121,6 @@ export async function POST(request) {
   try {
     const { agentId, payload } = await request.json();
 
-    // #region debug log - hypothesis A, B, C: Check payload structure for userId
-    fetch('http://127.0.0.1:7243/ingest/607636cc-d98e-4ebe-9ce3-6155ae51aeac',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/api/agents/route.js:13',message:'POST request received',data:{agentId,payloadKeys:payload?Object.keys(payload):[],hasUserId:!!payload?.userId,hasExternalUserId:!!payload?.externalUserId,hasUser_id:!!payload?.user_id,userIdValue:payload?.userId,payloadSample:JSON.stringify(payload).substring(0,200)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B,C'})}).catch(()=>{});
-    // #endregion
-
     if (!agentId) {
       return NextResponse.json(
         { success: false, error: 'Agent ID is required' },
@@ -156,25 +152,14 @@ export async function POST(request) {
     let sessionId;
     
     try {
-      // #region debug log - hypothesis A, B, C: Extract userId before session creation
       const extractedUserId = payload.userId || payload.externalUserId || payload.user_id || `user_${Date.now()}`;
-      fetch('http://127.0.0.1:7243/ingest/607636cc-d98e-4ebe-9ce3-6155ae51aeac',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/api/agents/route.js:45',message:'Before session creation - userId extraction',data:{extractedUserId,source:'payload.userId' in payload?'userId':'payload.externalUserId' in payload?'externalUserId':'payload.user_id' in payload?'user_id':'generated'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,B,C'})}).catch(()=>{});
-      // #endregion
+      const sessionRequestBody = { externalUserId: extractedUserId };
 
       console.log(`Creating new chat session via ${apiUrl}/chat/v1/sessions`);
-      
-      // #region debug log - hypothesis A, D: Session creation request body
-      const sessionRequestBody = { externalUserId: extractedUserId };
-      fetch('http://127.0.0.1:7243/ingest/607636cc-d98e-4ebe-9ce3-6155ae51aeac',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/api/agents/route.js:50',message:'Session creation request body',data:{sessionRequestBody,hasExternalUserId:!!sessionRequestBody.externalUserId},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,D'})}).catch(()=>{});
-      // #endregion
       
       // Add timeout handling for session creation (30 seconds)
       const sessionController = new AbortController();
       const sessionTimeoutId = setTimeout(() => sessionController.abort(), 30000);
-      
-      // #region debug log - hypothesis E: Session creation fetch with timeout
-      fetch('http://127.0.0.1:7243/ingest/607636cc-d98e-4ebe-9ce3-6155ae51aeac',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/api/agents/route.js:62',message:'Starting session creation fetch',data:{url:`${apiUrl}/chat/v1/sessions`,hasTimeout:true,timeoutMs:30000},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-      // #endregion
       
       let sessionResponse;
       try {
@@ -188,16 +173,8 @@ export async function POST(request) {
           signal: sessionController.signal, // Add timeout signal
         });
         clearTimeout(sessionTimeoutId);
-        
-        // #region debug log - hypothesis E: Session creation fetch completed
-        fetch('http://127.0.0.1:7243/ingest/607636cc-d98e-4ebe-9ce3-6155ae51aeac',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/api/agents/route.js:75',message:'Session creation fetch completed',data:{status:sessionResponse.status,ok:sessionResponse.ok,timeoutCleared:true},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-        // #endregion
       } catch (fetchError) {
         clearTimeout(sessionTimeoutId);
-        
-        // #region debug log - hypothesis E: Session creation fetch error
-        fetch('http://127.0.0.1:7243/ingest/607636cc-d98e-4ebe-9ce3-6155ae51aeac',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/api/agents/route.js:122',message:'Session creation fetch error',data:{errorName:fetchError?.name,errorCode:fetchError?.code,errorMessage:fetchError?.message,isTimeout:fetchError?.name==='AbortError'||fetchError?.code==='UND_ERR_CONNECT_TIMEOUT',cause:fetchError?.cause},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-        // #endregion
         
         // Handle connection timeout specifically (10s default from undici)
         if (fetchError.code === 'UND_ERR_CONNECT_TIMEOUT' || 
@@ -216,22 +193,13 @@ export async function POST(request) {
         throw fetchError;
       }
 
-      // #region debug log - hypothesis A, D: Session creation response
       const sessionResponseStatus = sessionResponse.status;
       const sessionResponseText = await sessionResponse.text();
       let sessionResponseData;
       try { sessionResponseData = JSON.parse(sessionResponseText); } catch { sessionResponseData = { raw: sessionResponseText }; }
-      fetch('http://127.0.0.1:7243/ingest/607636cc-d98e-4ebe-9ce3-6155ae51aeac',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/api/agents/route.js:60',message:'Session creation response',data:{status:sessionResponseStatus,ok:sessionResponse.ok,responseData:sessionResponseData},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,D'})}).catch(()=>{});
-      // #endregion
 
       if (!sessionResponse.ok) {
-        // errorText already consumed above for logging
         let errorData = sessionResponseData;
-        
-        // #region debug log - hypothesis A, D: Session creation error details
-        fetch('http://127.0.0.1:7243/ingest/607636cc-d98e-4ebe-9ce3-6155ae51aeac',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/api/agents/route.js:70',message:'Session creation failed',data:{status:sessionResponseStatus,error:errorData,requestBody:sessionRequestBody},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,D'})}).catch(()=>{});
-        // #endregion
-        
         console.error('Session creation failed:', {
           status: sessionResponse.status,
           error: errorData,
@@ -249,10 +217,6 @@ export async function POST(request) {
                   sessionData.data?.id || 
                   sessionData.sessionId || 
                   sessionData.id;
-      
-      // #region debug log - hypothesis A, D: Session ID extraction result
-      fetch('http://127.0.0.1:7243/ingest/607636cc-d98e-4ebe-9ce3-6155ae51aeac',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/api/agents/route.js:85',message:'Session ID extraction',data:{sessionId,extracted:!!sessionId,sessionDataKeys:Object.keys(sessionData),sessionDataStructure:JSON.stringify(sessionData).substring(0,300)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,D'})}).catch(()=>{});
-      // #endregion
       
       if (!sessionId) {
         console.error('Session creation response:', sessionData);
@@ -374,16 +338,14 @@ export async function POST(request) {
     }
 
     // Step 3: Construct query from payload
-    // The query should contain the data/instructions for the agent
+    // On-Demand uses /chat/v1/sessions/:id/query (invoke/run equivalent)
     let query = '';
     
-    // For Notes Generator (Agent 5) - use strict JSON prompt
+    // For Notes Generator (Agent 5) - use strict JSON prompt for structured output
     const NOTES_GENERATOR_ID = '696a7c31c7d6dfdf7e337d33';
     if (agentId === NOTES_GENERATOR_ID && (payload.transcript || payload.textContent)) {
       const content = payload.transcript || payload.textContent || '';
-      query = `Generate structured study notes from the following content in JSON format ONLY.
-
-OUTPUT FORMAT (JSON ONLY - no markdown, no explanations):
+      query = `Generate structured study notes from the following content. Return ONLY valid JSON, no markdown or explanations.
 
 {
   "summaryFormats": {
@@ -398,7 +360,7 @@ OUTPUT FORMAT (JSON ONLY - no markdown, no explanations):
 }
 
 Content to analyze:
-${content.substring(0, 8000)}`; // Limit to avoid token limits
+${content.substring(0, 8000)}`;
     } else if (payload.query) {
       query = payload.query;
     } else if (payload.textContent || payload.transcript) {
@@ -413,24 +375,15 @@ ${content.substring(0, 8000)}`; // Limit to avoid token limits
       query = JSON.stringify(payload);
     }
 
-    // Step 3: Submit query to chat API with agent as pluginId
+    // Submit query to On-Demand Chat API (invoke/run: /chat/v1/sessions/:id/query)
     const queryUrl = `${apiUrl}/chat/v1/sessions/${sessionId}/query`;
-    
-    console.log(`Submitting query to session ${sessionId} with agent ${agentId} as plugin`);
-    console.log(`Query: ${query.substring(0, 100)}...`);
-
-    // #region debug log - hypothesis F, G: Query request body before fetch
-    // Try without pluginIds first - agent IDs might not be valid plugin IDs
-    // If agent functionality is needed, it may require different API endpoint or configuration
     const queryRequestBody = {
       endpointId: 'predefined-openai-gpt4.1-nano',
-      query: query,
-      // Remove pluginIds - agent IDs are not valid plugin IDs in chat API
-      // pluginIds: [agentId], // Commented out - causes "One or more agents are invalid" error
+      query,
       responseMode: 'sync',
     };
-    fetch('http://127.0.0.1:7243/ingest/607636cc-d98e-4ebe-9ce3-6155ae51aeac',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/api/agents/route.js:180',message:'Query request body before fetch - without pluginIds',data:{queryRequestBody,agentId,hasPluginIds:false,reason:'Agent IDs not valid as pluginIds in chat API'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F,G'})}).catch(()=>{});
-    // #endregion
+    
+    console.log(`Submitting query to session ${sessionId}, agent ${agentId}`);
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds for AI processing
@@ -508,10 +461,6 @@ ${content.substring(0, 8000)}`; // Limit to avoid token limits
     } catch {
       errorData = { message: errorText || `HTTP ${response.status}` };
     }
-    
-    // #region debug log - hypothesis F, G: Query error response details
-    fetch('http://127.0.0.1:7243/ingest/607636cc-d98e-4ebe-9ce3-6155ae51aeac',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/api/agents/route.js:260',message:'Query error response details',data:{status:response.status,errorData,invalidAgentIds:errorData.details?.invalidAgentIds,errorMessage:errorData.message,errorCode:errorData.errorCode,agentId,hasPluginIds:!!queryRequestBody.pluginIds},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F,G'})}).catch(()=>{});
-    // #endregion
     
     console.error(`Agent ${agentId} Error (${response.status}):`, {
       url: queryUrl,
