@@ -25,7 +25,7 @@ Transform audio, video, PDFs, and text into intelligent, structured summaries us
 4. **Q&A for Revision**: Study-ready question-answer pairs
 
 ### Smart Storage
-- **Firestore Database**: Store all notes, transcripts, and summaries
+- **MongoDB Database**: Store all notes, transcripts, and summaries
 - **In-Memory Processing**: No file storage costs - process and delete
 - **Search Functionality**: Find notes quickly
 - **Note Management**: View and delete notes
