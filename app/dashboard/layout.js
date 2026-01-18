@@ -7,8 +7,12 @@ import DashboardNavbar from './DashboardNavbar';
  * Protects the dashboard route - redirects to login if not authenticated
  */
 export default async function DashboardLayout({ children }) {
-  const session = await getSession();
-
+  let session = null;
+  try {
+    session = await getSession();
+  } catch (e) {
+    console.error('Dashboard getSession error:', e?.message || e);
+  }
   if (!session) {
     redirect('/login');
   }
