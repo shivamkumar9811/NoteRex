@@ -12,6 +12,7 @@ const THEMES = {
 
 const ChartContext = React.createContext(null)
 
+
 function useChart() {
   const context = React.useContext(ChartContext)
 

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import connectMongo from '@/lib/mongodb';
 import { v4 as uuidv4 } from 'uuid';
 
-const DB_NAME = 'noteforge';
+const DB_NAME = 'NoteRex';
 const COLLECTION_NAME = 'notes';
 
 // POST /api/notes-mongodb - Save note to MongoDB

@@ -17,6 +17,7 @@ const TableHeader = React.forwardRef(({ className, ...props }, ref) => (
 ))
 TableHeader.displayName = "TableHeader"
 
+
 const TableBody = React.forwardRef(({ className, ...props }, ref) => (
   <tbody
     ref={ref}

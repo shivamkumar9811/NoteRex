@@ -56,7 +56,7 @@ export default function ProjectImpact() {
               className="space-y-6 order-2 lg:order-1"
             >
               <h2 className="relative text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-white via-gray-300 to-white bg-clip-text text-transparent" style={{ WebkitTextFillColor: 'transparent' }}>
-                How NoteForge Actually Helps You Study
+                How NoteRex Actually Helps You Study
               </h2>
               <p className="text-lg md:text-xl text-gray-400 leading-relaxed">
                 From messy inputs to exam-ready clarity — fully automated.
@@ -117,7 +117,7 @@ export default function ProjectImpact() {
                   </h3>
 
                   <p className="mt-3 text-sm text-gray-300 leading-relaxed">
-                    Stop watching and forgetting. NoteForge generates smart Q&A and revision-ready notes that trigger
+                    Stop watching and forgetting. NoteRex generates smart Q&A and revision-ready notes that trigger
                     active recall — helping you actually understand, retain, and revise with confidence.
                   </p>
 

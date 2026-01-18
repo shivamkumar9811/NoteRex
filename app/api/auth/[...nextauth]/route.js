@@ -62,6 +62,17 @@ export const authOptions = {
     async signIn({ user, account, profile }) {
       if (account?.provider === 'google') {
         try {
+          // Validate required data
+          if (!user?.email) {
+            console.error('Google sign-in error: Missing user email');
+            return false;
+          }
+          
+          if (!account?.providerAccountId) {
+            console.error('Google sign-in error: Missing provider account ID');
+            return false;
+          }
+
           // Check if user exists by provider ID
           let dbUser = await findUserByProvider('google', account.providerAccountId);
           
@@ -74,7 +85,7 @@ export const authOptions = {
               const { ObjectId } = await import('mongodb');
               const connectMongo = (await import('@/lib/mongodb')).default;
               const client = await connectMongo();
-              const db = client.db('noteforge');
+              const db = client.db('NoteRex');
               const usersCollection = db.collection('users');
               
               await usersCollection.updateOne(
@@ -93,24 +104,70 @@ export const authOptions = {
               dbUser = await findUserByProvider('google', account.providerAccountId);
             } else {
               // Create new user
-              dbUser = await createUser({
-                email: user.email,
-                name: user.name,
-                image: user.image,
-                provider: 'google',
-                providerId: account.providerAccountId,
-              });
+              try {
+                dbUser = await createUser({
+                  email: user.email,
+                  name: user.name || user.email.split('@')[0],
+                  image: user.image,
+                  provider: 'google',
+                  providerId: account.providerAccountId,
+                });
+              } catch (createError) {
+                // If user already exists (race condition), try to find by email again
+                if (createError.message === 'User already exists') {
+                  const raceConditionUser = await findUserByEmail(user.email);
+                  if (raceConditionUser) {
+                    // Link the account
+                    const { ObjectId } = await import('mongodb');
+                    const connectMongo = (await import('@/lib/mongodb')).default;
+                    const client = await connectMongo();
+                    const db = client.db('NoteRex');
+                    const usersCollection = db.collection('users');
+                    
+                    await usersCollection.updateOne(
+                      { _id: raceConditionUser._id },
+                      {
+                        $set: {
+                          provider: 'google',
+                          providerId: account.providerAccountId,
+                          image: user.image,
+                          emailVerified: new Date(),
+                          updatedAt: new Date(),
+                        },
+                      }
+                    );
+                    
+                    dbUser = await findUserByProvider('google', account.providerAccountId);
+                  } else {
+                    throw createError;
+                  }
+                } else {
+                  throw createError;
+                }
+              }
             }
+          }
+          
+          // Validate dbUser was found/created
+          if (!dbUser || !dbUser._id) {
+            console.error('Google sign-in error: Failed to create or find user');
+            return false;
           }
           
           // Update user object for session
           user.id = dbUser._id.toString();
-          user.name = dbUser.name;
-          user.image = dbUser.image;
+          user.name = dbUser.name || user.name;
+          user.image = dbUser.image || user.image;
           
           return true;
         } catch (error) {
           console.error('Google sign-in error:', error);
+          console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            user: user ? { email: user.email, name: user.name } : null,
+            account: account ? { provider: account.provider, providerAccountId: account.providerAccountId } : null,
+          });
           return false;
         }
       }

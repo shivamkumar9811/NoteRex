@@ -430,7 +430,7 @@ function StepRoadmapSection() {
   );
 }
 
-export default function NoteForgeAI() {
+export default function NoteRexAI() {
   const router = useRouter();
   const { isAuthenticated, logout } = useAuth();
   const [file, setFile] = useState(null);
