@@ -40,14 +40,12 @@ Transform audio, video, PDFs, and text into intelligent, structured summaries us
 
 ### Backend
 - **Next.js API Routes**: Serverless API endpoints
-- **OpenAI Whisper**: State-of-the-art speech recognition
 - **Google Gemini 2.0**: Advanced text understanding and generation
-- **Firebase Firestore**: Scalable NoSQL database
+- **Mongo DB**: Scalable NoSQL database
 
 ### Libraries
 - `openai`: OpenAI API client
 - `@google/generative-ai`: Google Gemini API client
-- `firebase`: Firebase SDK
 - `pdf-parse`: PDF text extraction
 - `busboy`: Multipart form data parsing
 - `ytdl-core`: YouTube video processing (future feature)
